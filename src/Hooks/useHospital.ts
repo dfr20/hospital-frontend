@@ -5,7 +5,7 @@ import type { Hospital, HospitalPayload, HospitalResponse } from '../Types/Hospi
 interface useHospitalHook {
     fetchHospitals: (page?: number, size?: number) => ReturnType<typeof useQuery<HospitalResponse>>;
     fetchHospitalById: (id: string) => ReturnType<typeof useQuery<Hospital>>;
-    fetchHospitalByName: (name: string) => ReturnType<typeof useQuery<Hospital[]>>;
+    fetchHospitalByName: (name: string, enabled?: boolean) => ReturnType<typeof useQuery<Hospital[]>>;
     fetchHospitalByCity: (city: string) => ReturnType<typeof useQuery<Hospital[]>>;
     fetchHospitalByNationality: (nationality: string) => ReturnType<typeof useQuery<Hospital[]>>;
     createHospital: () => ReturnType<typeof useMutation<Hospital, Error, HospitalPayload>>;
@@ -37,14 +37,14 @@ export const useHospital = (): useHospitalHook => {
         });
     };
 
-    const fetchHospitalByName = (name: string): ReturnType<typeof useQuery<Hospital[]>> => {
+    const fetchHospitalByName = (name: string, enabled = true): ReturnType<typeof useQuery<Hospital[]>> => {
         return useQuery({
             queryKey: ['hospitals', 'byName', name],
             queryFn: async (): Promise<Hospital[]> => {
                 const response = await api.get<Hospital[]>(`/hospitals?name=${name}`);
                 return response.data;
             },
-            enabled: !!name
+            enabled: !!name && enabled
         });
     };
 

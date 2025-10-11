@@ -3,10 +3,16 @@ import React, { useState } from 'react';
 export interface FieldConfig {
   name: string;
   label: string;
-  type: 'text' | 'email' | 'tel' | 'select';
+  type: 'text' | 'email' | 'tel' | 'select' | 'password' | 'textarea';
   placeholder?: string;
   required?: boolean;
   options?: { value: string; label: string }[];
+  fetchOptionsFrom?: string;
+  optionValueKey?: string;
+  optionLabelKey?: string;
+  dependsOn?: string; // Nome do campo do qual depende
+  getDynamicOptions?: (dependentValue: string) => { value: string; label: string }[]; // Função para obter opções dinâmicas
+  rows?: number; // Número de linhas para textarea
 }
 
 interface DynamicFormProps<T> {
@@ -16,6 +22,8 @@ interface DynamicFormProps<T> {
   isLoading?: boolean;
   submitLabel?: string;
   cancelLabel?: string;
+  initialValues?: Partial<T>;
+  readOnly?: boolean;
 }
 
 function DynamicForm<T extends Record<string, any>>({
@@ -24,18 +32,40 @@ function DynamicForm<T extends Record<string, any>>({
   onCancel,
   isLoading = false,
   submitLabel = 'Criar',
-  cancelLabel = 'Cancelar'
+  cancelLabel = 'Cancelar',
+  initialValues,
+  readOnly = false
 }: DynamicFormProps<T>) {
-  const initialValues = fields.reduce((acc, field) => {
-    acc[field.name] = '';
-    return acc;
-  }, {} as Record<string, string>);
+  const getInitialValues = () => {
+    if (initialValues) {
+      return fields.reduce((acc, field) => {
+        acc[field.name] = (initialValues as any)[field.name] || '';
+        return acc;
+      }, {} as Record<string, string>);
+    }
+    return fields.reduce((acc, field) => {
+      acc[field.name] = '';
+      return acc;
+    }, {} as Record<string, string>);
+  };
 
-  const [formData, setFormData] = useState<Record<string, string>>(initialValues);
+  const [formData, setFormData] = useState<Record<string, string>>(getInitialValues());
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [name]: value };
+
+      // Limpar campos dependentes quando o campo pai mudar
+      fields.forEach(field => {
+        if (field.dependsOn === name) {
+          newData[field.name] = '';
+        }
+      });
+
+      return newData;
+    });
+
     // Limpa o erro do campo quando o usuário começa a digitar
     if (errors[name]) {
       setErrors(prev => {
@@ -76,25 +106,48 @@ function DynamicForm<T extends Record<string, any>>({
   };
 
   const renderField = (field: FieldConfig) => {
+    // Verificar se o campo está desabilitado por dependência
+    const isDependentDisabled = Boolean(field.dependsOn && !formData[field.dependsOn]);
+
     const commonClasses = `w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none ${
       errors[field.name] ? 'border-red-500' : 'border-gray-300'
-    }`;
+    } ${readOnly || isDependentDisabled ? 'bg-gray-50 cursor-not-allowed' : ''}`;
 
-    if (field.type === 'select' && field.options) {
+    if (field.type === 'select') {
+      // Obter opções dinâmicas se houver dependência
+      let selectOptions = field.options || [];
+      if (field.getDynamicOptions && field.dependsOn && formData[field.dependsOn]) {
+        selectOptions = field.getDynamicOptions(formData[field.dependsOn]);
+      }
+
       return (
         <select
           value={formData[field.name] || ''}
           onChange={(e) => handleChange(field.name, e.target.value)}
           className={commonClasses}
-          disabled={isLoading}
+          disabled={isLoading || readOnly || isDependentDisabled}
         >
           <option value="">{field.placeholder || `Selecione ${field.label}`}</option>
-          {field.options.map(option => (
+          {selectOptions.map(option => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
           ))}
         </select>
+      );
+    }
+
+    if (field.type === 'textarea') {
+      return (
+        <textarea
+          value={formData[field.name] || ''}
+          onChange={(e) => handleChange(field.name, e.target.value)}
+          placeholder={field.placeholder}
+          className={commonClasses}
+          disabled={isLoading || isDependentDisabled}
+          readOnly={readOnly}
+          rows={field.rows || 4}
+        />
       );
     }
 
@@ -105,7 +158,8 @@ function DynamicForm<T extends Record<string, any>>({
         onChange={(e) => handleChange(field.name, e.target.value)}
         placeholder={field.placeholder}
         className={commonClasses}
-        disabled={isLoading}
+        disabled={isLoading || isDependentDisabled}
+        readOnly={readOnly}
       />
     );
   };
@@ -132,15 +186,17 @@ function DynamicForm<T extends Record<string, any>>({
           disabled={isLoading}
           className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
         >
-          {cancelLabel}
+          {readOnly ? 'Fechar' : cancelLabel}
         </button>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors disabled:opacity-50"
-        >
-          {isLoading ? 'Salvando...' : submitLabel}
-        </button>
+        {!readOnly && (
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors disabled:opacity-50"
+          >
+            {isLoading ? 'Salvando...' : submitLabel}
+          </button>
+        )}
       </div>
     </form>
   );

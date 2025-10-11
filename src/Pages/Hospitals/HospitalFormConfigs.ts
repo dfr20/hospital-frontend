@@ -1,4 +1,5 @@
 import type { FieldConfig } from '../../Components/Common/Modal/DynamicForm';
+import { NATIONALITIES, getDocumentTypesForNationality } from '../../Utils/constants';
 
 // Configuração de campos para criar Hospital
 export const hospitalFormFields: FieldConfig[] = [
@@ -14,31 +15,25 @@ export const hospitalFormFields: FieldConfig[] = [
     label: 'Nacionalidade',
     type: 'select',
     required: true,
-    options: [
-      { value: 'Brasil', label: 'Brasil' },
-      { value: 'Estados Unidos', label: 'Estados Unidos' },
-      { value: 'Portugal', label: 'Portugal' },
-      { value: 'Espanha', label: 'Espanha' },
-      { value: 'Outro', label: 'Outro' }
-    ]
+    options: NATIONALITIES,
+    placeholder: 'Selecione a nacionalidade'
   },
   {
     name: 'document_type',
     label: 'Tipo de Documento',
     type: 'select',
     required: true,
-    options: [
-      { value: 'CNPJ', label: 'CNPJ' },
-      { value: 'CPF', label: 'CPF' },
-      { value: 'OTHER', label: 'Outro' }
-    ]
+    dependsOn: 'nationality',
+    getDynamicOptions: (nationality: string) => getDocumentTypesForNationality(nationality),
+    placeholder: 'Selecione o tipo de documento'
   },
   {
     name: 'document',
     label: 'Documento',
     type: 'text',
     placeholder: 'Digite o documento',
-    required: true
+    required: true,
+    dependsOn: 'document_type'
   },
   {
     name: 'email',

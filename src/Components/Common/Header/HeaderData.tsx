@@ -39,7 +39,24 @@ export const headerConfigs: Record<string, HeaderDataType> = {
       { id: 'settings', icon: Settings, type: 'icon' },
       { id: 'logout', icon: LogOut, type: 'icon' }
     ]
+  },
+  '/job-titles': {
+    breadcrumb: ['Home', 'Job Titles'],
+    title: 'Cargos',
+    actions: [
+      { id: 'settings', icon: Settings, type: 'icon' },
+      { id: 'logout', icon: LogOut, type: 'icon' }
+    ]
+  },
+  '/catalog': {
+    breadcrumb: ['Home', 'Catalog'],
+    title: 'Catálogo',
+    actions: [
+      { id: 'settings', icon: Settings, type: 'icon' },
+      { id: 'logout', icon: LogOut, type: 'icon' }
+    ]
   }
+
 };
 
 // Header padrão (fallback)

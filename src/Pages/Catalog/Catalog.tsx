@@ -8,111 +8,105 @@ import Modal from "../../Components/Common/Modal/Modal";
 import DynamicForm from "../../Components/Common/Modal/DynamicForm";
 import ConfirmationModal from "../../Components/Common/Modal/ConfirmationModal";
 import SearchData from "../../Components/Utils/SearchData";
-import type { Hospital, HospitalPayload } from "../../Types/Hospital";
-import { useHospital } from "../../Hooks/useHospital";
-import { hospitalFormFields } from "./HospitalFormConfigs";
+import type { Catalog, CatalogPayload } from "../../Types/Catalog";
+import { useCatalog } from "../../Hooks/useCatalog";
+import { catalogFormFields } from "./CatalogFormConfigs";
 import { useToast } from "../../Contexts/ToastContext";
 
 // Tipo estendido para incluir 'id' necessário para o componente Table
-type HospitalWithId = Hospital & { id: string };
+type CatalogWithId = Catalog & { id: string };
 
-const Hospitals: React.FC = () => {
+const Catalogs: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedHospital, setSelectedHospital] = useState<HospitalWithId | null>(null);
+  const [selectedCatalog, setSelectedCatalog] = useState<CatalogWithId | null>(null);
   const [isViewMode, setIsViewMode] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
-  const [hospitalToDelete, setHospitalToDelete] = useState<HospitalWithId | null>(null);
+  const [catalogToDelete, setCatalogToDelete] = useState<CatalogWithId | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const itemsPerPage = 10;
 
   const toast = useToast();
-  const { fetchHospitals, createHospital, updateHospital, deleteHospital } = useHospital();
-  const { data: hospitalsData, isLoading, error } = fetchHospitals(currentPage, itemsPerPage);
-  const { mutate: createHospitalMutation, isPending: isCreating } = createHospital();
-  const { mutate: updateHospitalMutation, isPending: isUpdating } = updateHospital();
+  const { fetchCatalogs, createCatalog, updateCatalog, deleteCatalog } = useCatalog();
+  const { data: catalogsData, isLoading, error } = fetchCatalogs(currentPage, itemsPerPage);
+  const { mutate: createCatalogMutation, isPending: isCreating } = createCatalog();
+  const { mutate: updateCatalogMutation, isPending: isUpdating } = updateCatalog();
 
   // Adaptar dados para incluir 'id' baseado em 'public_id'
-  const hospitalsWithId: HospitalWithId[] = (hospitalsData?.items || []).map((hospital: Hospital) => ({
-    ...hospital,
-    id: hospital.public_id
+  const catalogsWithId: CatalogWithId[] = (catalogsData?.items || []).map((catalog: Catalog) => ({
+    ...catalog,
+    id: catalog.public_id
   }));
 
   // Definição das colunas da tabela
-  const columns: Column<HospitalWithId>[] = [
+  const columns: Column<CatalogWithId>[] = [
     {
       key: 'name',
       header: 'Nome',
-      render: (hospital) => (
-        <div className="text-sm font-medium text-gray-900">{hospital.name}</div>
+      render: (catalog) => (
+        <div className="text-sm font-medium text-gray-900">{catalog.name}</div>
       )
     },
     {
-      key: 'document',
-      header: 'CNPJ',
+      key: 'description',
+      header: 'Descrição',
       hideOnMobile: true,
-      render: (hospital) => (
-        <div className="text-sm text-gray-500">{hospital.document}</div>
+      render: (catalog) => (
+        <div className="text-sm text-gray-500">{catalog.description}</div>
       )
     },
     {
-      key: 'city',
-      header: 'Cidade',
+      key: 'presentation',
+      header: 'Apresentação',
       hideOnTablet: true,
-      render: (hospital) => (
-        <div className="text-sm text-gray-500">{hospital.city}</div>
+      render: (catalog) => (
+        <div className="text-sm text-gray-500">{catalog.presentation}</div>
       )
     },
     {
-      key: 'email',
-      header: 'Email',
-      hideOnMobile: true,
-      render: (hospital) => (
-        <div className="text-sm text-gray-500">{hospital.email}</div>
-      )
-    },
-    {
-      key: 'phone',
-      header: 'Telefone',
+      key: 'created_at',
+      header: 'Data de Criação',
       hideOnTablet: true,
-      render: (hospital) => (
-        <div className="text-sm text-gray-500">{hospital.phone}</div>
+      render: (catalog) => (
+        <div className="text-sm text-gray-500">
+          {new Date(catalog.created_at).toLocaleDateString('pt-BR')}
+        </div>
       )
     }
   ];
 
-  const handleView = (hospital: HospitalWithId) => {
-    setSelectedHospital(hospital);
+  const handleView = (catalog: CatalogWithId) => {
+    setSelectedCatalog(catalog);
     setIsViewMode(true);
     setIsEditMode(false);
     setIsModalOpen(true);
   };
 
-  const handleEdit = (hospital: HospitalWithId) => {
-    setSelectedHospital(hospital);
+  const handleEdit = (catalog: CatalogWithId) => {
+    setSelectedCatalog(catalog);
     setIsEditMode(true);
     setIsViewMode(false);
     setIsModalOpen(true);
   };
 
-  const handleDelete = (hospital: HospitalWithId) => {
-    setHospitalToDelete(hospital);
+  const handleDelete = (catalog: CatalogWithId) => {
+    setCatalogToDelete(catalog);
     setIsConfirmationOpen(true);
   };
 
   const handleConfirmDelete = async () => {
-    if (!hospitalToDelete) return;
+    if (!catalogToDelete) return;
 
     setIsDeleting(true);
     try {
-      await deleteHospital(hospitalToDelete.public_id);
-      toast.success('Hospital excluído', 'Hospital excluído com sucesso!');
+      await deleteCatalog(catalogToDelete.public_id);
+      toast.success('Item excluído', 'Item do catálogo excluído com sucesso!');
       setIsConfirmationOpen(false);
-      setHospitalToDelete(null);
+      setCatalogToDelete(null);
     } catch (error) {
-      console.error('Erro ao excluir hospital:', error);
-      toast.error('Erro ao excluir', 'Não foi possível excluir o hospital. Tente novamente.');
+      console.error('Erro ao excluir item do catálogo:', error);
+      toast.error('Erro ao excluir', 'Não foi possível excluir o item. Tente novamente.');
     } finally {
       setIsDeleting(false);
     }
@@ -120,15 +114,15 @@ const Hospitals: React.FC = () => {
 
   const handleCancelDelete = () => {
     setIsConfirmationOpen(false);
-    setHospitalToDelete(null);
+    setCatalogToDelete(null);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const handleNewHospital = () => {
-    setSelectedHospital(null);
+  const handleNewCatalog = () => {
+    setSelectedCatalog(null);
     setIsViewMode(false);
     setIsEditMode(false);
     setIsModalOpen(true);
@@ -136,39 +130,39 @@ const Hospitals: React.FC = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedHospital(null);
+    setSelectedCatalog(null);
     setIsViewMode(false);
     setIsEditMode(false);
   };
 
-  const handleSubmitHospital = (data: HospitalPayload) => {
-    if (isEditMode && selectedHospital) {
+  const handleSubmitCatalog = (data: CatalogPayload) => {
+    if (isEditMode && selectedCatalog) {
       // Modo de edição
-      updateHospitalMutation(
-        { id: selectedHospital.public_id, data },
+      updateCatalogMutation(
+        { id: selectedCatalog.public_id, data },
         {
           onSuccess: () => {
-            toast.success('Hospital atualizado', 'Hospital atualizado com sucesso!');
+            toast.success('Item atualizado', 'Item do catálogo atualizado com sucesso!');
             setIsModalOpen(false);
-            setSelectedHospital(null);
+            setSelectedCatalog(null);
             setIsEditMode(false);
           },
           onError: (error) => {
-            console.error('Erro ao editar hospital:', error);
-            toast.error('Erro ao atualizar', 'Não foi possível atualizar o hospital. Tente novamente.');
+            console.error('Erro ao editar item do catálogo:', error);
+            toast.error('Erro ao atualizar', 'Não foi possível atualizar o item. Tente novamente.');
           }
         }
       );
     } else {
       // Modo de criação
-      createHospitalMutation(data, {
+      createCatalogMutation(data, {
         onSuccess: () => {
-          toast.success('Hospital criado', 'Hospital criado com sucesso!');
+          toast.success('Item criado', 'Item do catálogo criado com sucesso!');
           setIsModalOpen(false);
         },
         onError: (error) => {
-          console.error('Erro ao criar hospital:', error);
-          toast.error('Erro ao criar', 'Não foi possível criar o hospital. Tente novamente.');
+          console.error('Erro ao criar item do catálogo:', error);
+          toast.error('Erro ao criar', 'Não foi possível criar o item. Tente novamente.');
         }
       });
     }
@@ -179,7 +173,7 @@ const Hospitals: React.FC = () => {
       <Layout>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Erro ao carregar hospitais</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Erro ao carregar catálogo</h3>
             <p className="text-gray-500">Tente novamente mais tarde</p>
           </div>
         </div>
@@ -197,7 +191,7 @@ const Hospitals: React.FC = () => {
             <div className="flex-1">
               <SearchData
                 onSelect={(item) => {
-                  console.log('Hospital selecionado:', item);
+                  console.log('Item do catálogo selecionado:', item);
                   // Aqui você pode adicionar lógica para filtrar ou navegar
                 }}
               />
@@ -210,17 +204,17 @@ const Hospitals: React.FC = () => {
                 <span className="hidden sm:inline">Filtrar</span>
               </button>
               <button
-                onClick={handleNewHospital}
+                onClick={handleNewCatalog}
                 className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Novo Hospital</span>
+                <span className="hidden sm:inline">Novo Item</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Tabela de Hospitais */}
+        {/* Tabela de Catálogo */}
         <div>
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
@@ -228,17 +222,17 @@ const Hospitals: React.FC = () => {
             </div>
           ) : (
             <>
-              <Table<HospitalWithId>
-                data={hospitalsWithId}
+              <Table<CatalogWithId>
+                data={catalogsWithId}
                 columns={columns}
                 onView={handleView}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
-                emptyMessage="Nenhum hospital encontrado"
+                emptyMessage="Nenhum item encontrado no catálogo"
               />
               <Pagination
                 currentPage={currentPage}
-                totalItems={hospitalsData?.total || 0}
+                totalItems={catalogsData?.total || 0}
                 itemsPerPage={itemsPerPage}
                 onPageChange={handlePageChange}
               />
@@ -253,20 +247,20 @@ const Hospitals: React.FC = () => {
         onClose={handleCloseModal}
         title={
           isViewMode
-            ? "Detalhes do Hospital"
+            ? "Detalhes do Item"
             : isEditMode
-            ? "Editar Hospital"
-            : "Criar Novo Hospital"
+            ? "Editar Item"
+            : "Criar Novo Item"
         }
       >
-        <DynamicForm<HospitalPayload>
-          fields={hospitalFormFields}
-          onSubmit={handleSubmitHospital}
+        <DynamicForm<CatalogPayload>
+          fields={catalogFormFields}
+          onSubmit={handleSubmitCatalog}
           onCancel={handleCloseModal}
           isLoading={isCreating || isUpdating}
-          submitLabel={isEditMode ? "Salvar Alterações" : "Criar Hospital"}
+          submitLabel={isEditMode ? "Salvar Alterações" : "Criar Item"}
           cancelLabel="Cancelar"
-          initialValues={selectedHospital || undefined}
+          initialValues={selectedCatalog || undefined}
           readOnly={isViewMode}
         />
       </Modal>
@@ -276,8 +270,8 @@ const Hospitals: React.FC = () => {
         isOpen={isConfirmationOpen}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        title="Excluir Hospital"
-        message={`Tem certeza que deseja excluir o hospital "${hospitalToDelete?.name}"? Esta ação não pode ser desfeita.`}
+        title="Excluir Item"
+        message={`Tem certeza que deseja excluir "${catalogToDelete?.name}"? Esta ação não pode ser desfeita.`}
         confirmLabel="Excluir"
         cancelLabel="Cancelar"
         isLoading={isDeleting}
@@ -287,4 +281,4 @@ const Hospitals: React.FC = () => {
   );
 };
 
-export default Hospitals;
+export default Catalogs;

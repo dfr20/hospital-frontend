@@ -1,4 +1,4 @@
-import React from 'react';
+import { Edit, Trash2, Eye } from 'lucide-react';
 
 export interface Column<T> {
   key: string;
@@ -14,6 +14,7 @@ interface TableProps<T> {
   columns: Column<T>[];
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
+  onView?: (item: T) => void;
   showActions?: boolean;
   emptyMessage?: string;
 }
@@ -23,6 +24,7 @@ export function Table<T extends { id: number | string }>({
   columns,
   onEdit,
   onDelete,
+  onView,
   showActions = true,
   emptyMessage = 'Nenhum registro encontrado'
 }: TableProps<T>) {
@@ -80,20 +82,31 @@ export function Table<T extends { id: number | string }>({
                   {showActions && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex gap-3">
+                        {onView && (
+                          <button
+                            onClick={() => onView(item)}
+                            className="text-blue-600 hover:text-blue-900 transition-colors"
+                            title="Ver detalhes"
+                          >
+                            <Eye size={16} />
+                          </button>
+                        )}
                         {onEdit && (
                           <button
                             onClick={() => onEdit(item)}
                             className="text-teal-600 hover:text-teal-900 transition-colors"
+                            title="Editar"
                           >
-                            Editar
+                            <Edit size={16} />
                           </button>
                         )}
                         {onDelete && (
                           <button
                             onClick={() => onDelete(item)}
                             className="text-red-600 hover:text-red-900 transition-colors"
+                            title="Excluir"
                           >
-                            Excluir
+                            <Trash2 size={16} />
                           </button>
                         )}
                       </div>

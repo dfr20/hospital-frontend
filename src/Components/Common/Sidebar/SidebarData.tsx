@@ -1,4 +1,4 @@
-import { Building2, Home, Users } from 'lucide-react';
+import { Briefcase, Building2, Home, Users, Package } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export interface MenuItem {
@@ -10,7 +10,7 @@ export interface MenuItem {
 
 export interface SidebarDataType {
   logo: {
-    title: string;
+    title?: string;
     icon: LucideIcon;
   };
   menuItems: MenuItem[];
@@ -25,6 +25,8 @@ export const sidebarData: SidebarDataType = {
     { id: 'dashboard', label: 'Dashboard', icon: Home, route: '/dashboard' },
     { id: 'hospitais', label: 'Hospitais', icon: Building2, route: '/hospitals' },
     { id: 'usuarios', label: 'Usuários', icon: Users, route: '/users' },
+    { id: 'cargos', label: 'Cargos', icon: Briefcase, route: '/job-titles' },
+    { id: 'catalogo', label: 'Catálogo', icon: Package, route: '/catalog' }
   ]
 };
 
@@ -32,5 +34,7 @@ export const sidebarData: SidebarDataType = {
 export const routeToPageId: Record<string, string> = {
   '/users': 'usuarios',
   '/hospitals': 'hospitais',
-  '/dashboard': 'dashboard'
+  '/dashboard': 'dashboard',
+  '/job-titles': 'cargos',
+  '/catalog': 'catalogo'
 };
