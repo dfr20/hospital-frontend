@@ -7,11 +7,11 @@ import Pagination from "../../Components/Common/Table/Pagination";
 import Modal from "../../Components/Common/Modal/Modal";
 import DynamicForm from "../../Components/Common/Modal/DynamicForm";
 import ConfirmationModal from "../../Components/Common/Modal/ConfirmationModal";
-import SearchData from "../../Components/Utils/SearchData";
 import type { JobTitle, JobTitlePayload } from "../../Types/JobTitle";
 import { useJobTitles } from "../../Hooks/useJobTitles";
 import { jobTitleFormFields } from "./JobTitleFormConfigs";
 import { useToast } from "../../Contexts/ToastContext";
+import { getErrorMessage } from "../../Utils/errorHandler";
 
 // Tipo estendido para incluir 'id' necessário para o componente Table
 type JobTitleWithId = JobTitle & { id: string };
@@ -25,6 +25,7 @@ const JobTitles: React.FC = () => {
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [jobTitleToDelete, setJobTitleToDelete] = useState<JobTitleWithId | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const itemsPerPage = 10;
 
   const toast = useToast();
@@ -38,6 +39,14 @@ const JobTitles: React.FC = () => {
     ...jobTitle,
     id: jobTitle.public_id
   }));
+
+  // Filtrar cargos baseado no termo de busca
+  const filteredJobTitles = jobTitlesWithId.filter((jobTitle) => {
+    if (!searchTerm) return true;
+
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    return jobTitle.title.toLowerCase().includes(lowerSearchTerm);
+  });
 
   // Definição das colunas da tabela
   const columns: Column<JobTitleWithId>[] = [
@@ -100,7 +109,7 @@ const JobTitles: React.FC = () => {
       setJobTitleToDelete(null);
     } catch (error) {
       console.error('Erro ao excluir cargo:', error);
-      toast.error('Erro ao excluir', 'Não foi possível excluir o cargo. Tente novamente.');
+      toast.error('Erro ao excluir', getErrorMessage(error));
     } finally {
       setIsDeleting(false);
     }
@@ -143,7 +152,7 @@ const JobTitles: React.FC = () => {
           },
           onError: (error) => {
             console.error('Erro ao editar cargo:', error);
-            toast.error('Erro ao atualizar', 'Não foi possível atualizar o cargo. Tente novamente.');
+            toast.error('Erro ao atualizar', getErrorMessage(error));
           }
         }
       );
@@ -156,7 +165,7 @@ const JobTitles: React.FC = () => {
         },
         onError: (error) => {
           console.error('Erro ao criar cargo:', error);
-          toast.error('Erro ao criar', 'Não foi possível criar o cargo. Tente novamente.');
+          toast.error('Erro ao criar', getErrorMessage(error));
         }
       });
     }
@@ -183,11 +192,12 @@ const JobTitles: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Campo de Busca */}
             <div className="flex-1">
-              <SearchData
-                onSelect={(item) => {
-                  console.log('Cargo selecionado:', item);
-                  // Aqui você pode adicionar lógica para filtrar ou navegar
-                }}
+              <input
+                type="text"
+                placeholder="Buscar cargos..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
               />
             </div>
 
@@ -217,19 +227,21 @@ const JobTitles: React.FC = () => {
           ) : (
             <>
               <Table<JobTitleWithId>
-                data={jobTitlesWithId}
+                data={filteredJobTitles}
                 columns={columns}
                 onView={handleView}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
-                emptyMessage="Nenhum cargo encontrado"
+                emptyMessage={searchTerm ? "Nenhum cargo encontrado com esse termo" : "Nenhum cargo encontrado"}
               />
-              <Pagination
-                currentPage={currentPage}
-                totalItems={jobTitlesData?.total || 0}
-                itemsPerPage={itemsPerPage}
-                onPageChange={handlePageChange}
-              />
+              {!searchTerm && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={jobTitlesData?.total || 0}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={handlePageChange}
+                />
+              )}
             </>
           )}
         </div>

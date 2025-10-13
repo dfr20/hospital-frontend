@@ -7,11 +7,11 @@ import Pagination from "../../Components/Common/Table/Pagination";
 import Modal from "../../Components/Common/Modal/Modal";
 import DynamicForm from "../../Components/Common/Modal/DynamicForm";
 import ConfirmationModal from "../../Components/Common/Modal/ConfirmationModal";
-import SearchData from "../../Components/Utils/SearchData";
 import type { Catalog, CatalogPayload } from "../../Types/Catalog";
 import { useCatalog } from "../../Hooks/useCatalog";
 import { catalogFormFields } from "./CatalogFormConfigs";
 import { useToast } from "../../Contexts/ToastContext";
+import { getErrorMessage } from "../../Utils/errorHandler";
 
 // Tipo estendido para incluir 'id' necessário para o componente Table
 type CatalogWithId = Catalog & { id: string };
@@ -25,6 +25,7 @@ const Catalogs: React.FC = () => {
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [catalogToDelete, setCatalogToDelete] = useState<CatalogWithId | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const itemsPerPage = 10;
 
   const toast = useToast();
@@ -38,6 +39,18 @@ const Catalogs: React.FC = () => {
     ...catalog,
     id: catalog.public_id
   }));
+
+  // Filtrar catálogo baseado no termo de busca
+  const filteredCatalogs = catalogsWithId.filter((catalog) => {
+    if (!searchTerm) return true;
+
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    return (
+      catalog.name.toLowerCase().includes(lowerSearchTerm) ||
+      catalog.description.toLowerCase().includes(lowerSearchTerm) ||
+      catalog.presentation.toLowerCase().includes(lowerSearchTerm)
+    );
+  });
 
   // Definição das colunas da tabela
   const columns: Column<CatalogWithId>[] = [
@@ -106,7 +119,7 @@ const Catalogs: React.FC = () => {
       setCatalogToDelete(null);
     } catch (error) {
       console.error('Erro ao excluir item do catálogo:', error);
-      toast.error('Erro ao excluir', 'Não foi possível excluir o item. Tente novamente.');
+      toast.error('Erro ao excluir', getErrorMessage(error));
     } finally {
       setIsDeleting(false);
     }
@@ -149,7 +162,7 @@ const Catalogs: React.FC = () => {
           },
           onError: (error) => {
             console.error('Erro ao editar item do catálogo:', error);
-            toast.error('Erro ao atualizar', 'Não foi possível atualizar o item. Tente novamente.');
+            toast.error('Erro ao atualizar', getErrorMessage(error));
           }
         }
       );
@@ -162,7 +175,7 @@ const Catalogs: React.FC = () => {
         },
         onError: (error) => {
           console.error('Erro ao criar item do catálogo:', error);
-          toast.error('Erro ao criar', 'Não foi possível criar o item. Tente novamente.');
+          toast.error('Erro ao criar', getErrorMessage(error));
         }
       });
     }
@@ -189,11 +202,12 @@ const Catalogs: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Campo de Busca */}
             <div className="flex-1">
-              <SearchData
-                onSelect={(item) => {
-                  console.log('Item do catálogo selecionado:', item);
-                  // Aqui você pode adicionar lógica para filtrar ou navegar
-                }}
+              <input
+                type="text"
+                placeholder="Buscar itens do catálogo..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
               />
             </div>
 
@@ -223,19 +237,21 @@ const Catalogs: React.FC = () => {
           ) : (
             <>
               <Table<CatalogWithId>
-                data={catalogsWithId}
+                data={filteredCatalogs}
                 columns={columns}
                 onView={handleView}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
-                emptyMessage="Nenhum item encontrado no catálogo"
+                emptyMessage={searchTerm ? "Nenhum item encontrado com esse termo" : "Nenhum item encontrado no catálogo"}
               />
-              <Pagination
-                currentPage={currentPage}
-                totalItems={catalogsData?.total || 0}
-                itemsPerPage={itemsPerPage}
-                onPageChange={handlePageChange}
-              />
+              {!searchTerm && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={catalogsData?.total || 0}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={handlePageChange}
+                />
+              )}
             </>
           )}
         </div>

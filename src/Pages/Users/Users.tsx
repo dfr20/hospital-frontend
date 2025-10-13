@@ -7,11 +7,11 @@ import Pagination from "../../Components/Common/Table/Pagination";
 import Modal from "../../Components/Common/Modal/Modal";
 import DynamicForm from "../../Components/Common/Modal/DynamicForm";
 import ConfirmationModal from "../../Components/Common/Modal/ConfirmationModal";
-import SearchData from "../../Components/Utils/SearchData";
 import type { User, UserPayload } from "../../Types/User";
 import { useUsers } from "../../Hooks/useUsers";
 import { userFormFields } from "./UserFormConfigs";
 import { useToast } from "../../Contexts/ToastContext";
+import { getErrorMessage } from "../../Utils/errorHandler";
 
 // Tipo estendido para incluir 'id' necessário para o componente Table
 type UserWithId = User & { id: string };
@@ -25,6 +25,7 @@ const Users: React.FC = () => {
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserWithId | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const itemsPerPage = 10;
 
   const {
@@ -53,6 +54,21 @@ const Users: React.FC = () => {
     ...user,
     id: user.public_id
   }));
+
+  // Filtrar usuários baseado no termo de busca
+  const filteredUsers = usersWithId.filter((user) => {
+    if (!searchTerm) return true;
+
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    return (
+      user.name.toLowerCase().includes(lowerSearchTerm) ||
+      user.email.toLowerCase().includes(lowerSearchTerm) ||
+      user.phone.toLowerCase().includes(lowerSearchTerm) ||
+      user.role.name.toLowerCase().includes(lowerSearchTerm) ||
+      user.job_title.title.toLowerCase().includes(lowerSearchTerm) ||
+      user.hospital.name.toLowerCase().includes(lowerSearchTerm)
+    );
+  });
 
   // Atualizar campos do formulário com as opções dinâmicas
   const formFieldsWithOptions = userFormFields.map(field => {
@@ -158,7 +174,7 @@ const Users: React.FC = () => {
       setUserToDelete(null);
     } catch (error) {
       console.error('Erro ao excluir usuário:', error);
-      toast.error('Erro ao excluir', 'Não foi possível excluir o usuário. Tente novamente.');
+      toast.error('Erro ao excluir', getErrorMessage(error));
     } finally {
       setIsDeleting(false);
     }
@@ -201,7 +217,7 @@ const Users: React.FC = () => {
           },
           onError: (error) => {
             console.error('Erro ao editar usuário:', error);
-            toast.error('Erro ao editar', 'Não foi possível editar o usuário. Tente novamente.');
+            toast.error('Erro ao editar', getErrorMessage(error));
           }
         }
       );
@@ -214,7 +230,7 @@ const Users: React.FC = () => {
         },
         onError: (error) => {
           console.error('Erro ao criar usuário:', error);
-          toast.error('Erro ao cadastrar', 'Não foi possível cadastrar o usuário. Tente novamente.');
+          toast.error('Erro ao cadastrar', getErrorMessage(error));
         }
       });
     }
@@ -241,11 +257,12 @@ const Users: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Campo de Busca */}
             <div className="flex-1">
-              <SearchData
-                onSelect={(item) => {
-                  console.log('Usuário selecionado:', item);
-                  // Aqui você pode adicionar lógica para filtrar ou navegar
-                }}
+              <input
+                type="text"
+                placeholder="Buscar usuários..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
               />
             </div>
 
@@ -275,19 +292,21 @@ const Users: React.FC = () => {
           ) : (
             <>
               <Table<UserWithId>
-                data={usersWithId}
+                data={filteredUsers}
                 columns={columns}
                 onView={handleView}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
-                emptyMessage="Nenhum usuário encontrado"
+                emptyMessage={searchTerm ? "Nenhum usuário encontrado com esse termo" : "Nenhum usuário encontrado"}
               />
-              <Pagination
-                currentPage={currentPage}
-                totalItems={usersData?.total || 0}
-                itemsPerPage={itemsPerPage}
-                onPageChange={handlePageChange}
-              />
+              {!searchTerm && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={usersData?.total || 0}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={handlePageChange}
+                />
+              )}
             </>
           )}
         </div>

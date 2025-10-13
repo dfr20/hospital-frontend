@@ -14,12 +14,12 @@ export interface SelectOption {
 // ============================================
 
 export const NATIONALITIES: SelectOption[] = [
-  { value: 'Brasileira', label: 'Brasileira 🇧🇷' },
-  { value: 'Argentina', label: 'Argentina 🇦🇷' },
-  { value: 'Paraguaia', label: 'Paraguaia 🇵🇾' },
-  { value: 'Uruguaia', label: 'Uruguaia 🇺🇾' },
-  { value: 'Boliviana', label: 'Boliviana 🇧🇴' },
-  { value: 'Chilena', label: 'Chilena 🇨🇱' },
+  { value: 'Brasileira', label: 'Brasileira' },
+  { value: 'Argentina', label: 'Argentina' },
+  { value: 'Paraguaia', label: 'Paraguaia' },
+  { value: 'Uruguaia', label: 'Uruguaia' },
+  { value: 'Boliviana', label: 'Boliviana' },
+  { value: 'Chilena', label: 'Chilena' },
 ];
 
 // ============================================

@@ -18,7 +18,7 @@ export interface SidebarDataType {
 
 export const sidebarData: SidebarDataType = {
   logo: {
-    title: 'ADM - Responsáveis',
+    title: 'Painel do Administrador',
     icon: Building2
   },
   menuItems: [

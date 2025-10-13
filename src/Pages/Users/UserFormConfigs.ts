@@ -19,9 +19,10 @@ export const userFormFields: FieldConfig[] = [
   {
     name: 'phone',
     label: 'Telefone',
-    type: 'tel',
+    type: 'phone',
     placeholder: '(00) 00000-0000',
-    required: true
+    required: true,
+    withCountryCode: true
   },
   {
     name: 'password',

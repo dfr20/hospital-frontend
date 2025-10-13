@@ -17,7 +17,7 @@ export interface HeaderDataType {
 // Configuração de headers por rota
 export const headerConfigs: Record<string, HeaderDataType> = {
   '/users': {
-    breadcrumb: ['Home', 'Users'],
+    breadcrumb: ['Admin', 'Users'],
     title: 'Usuários',
     actions: [
       { id: 'settings', icon: Settings, type: 'icon' },
@@ -25,7 +25,7 @@ export const headerConfigs: Record<string, HeaderDataType> = {
     ]
   },
   '/hospitals': {
-    breadcrumb: ['Home', 'Hospitals'],
+    breadcrumb: ['Admin', 'Hospitals'],
     title: 'Hospitais',
     actions: [
       { id: 'settings', icon: Settings, type: 'icon' },
@@ -33,7 +33,7 @@ export const headerConfigs: Record<string, HeaderDataType> = {
     ]
   },
   '/dashboard': {
-    breadcrumb: ['Home', 'Dashboard'],
+    breadcrumb: ['Admin', 'Dashboard'],
     title: 'Dashboard',
     actions: [
       { id: 'settings', icon: Settings, type: 'icon' },
@@ -41,7 +41,7 @@ export const headerConfigs: Record<string, HeaderDataType> = {
     ]
   },
   '/job-titles': {
-    breadcrumb: ['Home', 'Job Titles'],
+    breadcrumb: ['Admin', 'Job Titles'],
     title: 'Cargos',
     actions: [
       { id: 'settings', icon: Settings, type: 'icon' },
@@ -49,7 +49,7 @@ export const headerConfigs: Record<string, HeaderDataType> = {
     ]
   },
   '/catalog': {
-    breadcrumb: ['Home', 'Catalog'],
+    breadcrumb: ['Admin', 'Catalog'],
     title: 'Catálogo',
     actions: [
       { id: 'settings', icon: Settings, type: 'icon' },

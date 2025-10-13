@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { COUNTRY_CODES } from '../../../Utils/countryCodes';
+import { removeNonNumeric, applyPhoneMask, applyDocumentMask } from '../../../Utils/masks';
 
 export interface FieldConfig {
   name: string;
   label: string;
-  type: 'text' | 'email' | 'tel' | 'select' | 'password' | 'textarea';
+  type: 'text' | 'email' | 'tel' | 'select' | 'password' | 'textarea' | 'phone' | 'document';
   placeholder?: string;
   required?: boolean;
   options?: { value: string; label: string }[];
@@ -13,6 +15,10 @@ export interface FieldConfig {
   dependsOn?: string; // Nome do campo do qual depende
   getDynamicOptions?: (dependentValue: string) => { value: string; label: string }[]; // Função para obter opções dinâmicas
   rows?: number; // Número de linhas para textarea
+  mask?: string; // Máscara para o campo (ex: '99.999.999/9999-99')
+  maskChar?: string; // Caractere usado na máscara (default: '_')
+  withCountryCode?: boolean; // Se true, mostra seletor de DDI para telefone
+  documentTypeField?: string; // Nome do campo que contém o tipo de documento
 }
 
 interface DynamicFormProps<T> {
@@ -51,6 +57,7 @@ function DynamicForm<T extends Record<string, any>>({
 
   const [formData, setFormData] = useState<Record<string, string>>(getInitialValues());
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [countryDialCodes, setCountryDialCodes] = useState<Record<string, string>>({});
 
   const handleChange = (name: string, value: string) => {
     setFormData(prev => {
@@ -101,7 +108,24 @@ function DynamicForm<T extends Record<string, any>>({
     e.preventDefault();
 
     if (validate()) {
-      onSubmit(formData as T);
+      // Limpar máscaras antes de enviar
+      const cleanedData = { ...formData };
+
+      fields.forEach(field => {
+        if (field.type === 'phone' || field.type === 'document') {
+          // Remove todos os caracteres não numéricos
+          const cleaned = removeNonNumeric(cleanedData[field.name] || '');
+
+          // Se tem DDI, adiciona ao valor
+          if (field.type === 'phone' && field.withCountryCode && countryDialCodes[field.name]) {
+            cleanedData[field.name] = countryDialCodes[field.name] + cleaned;
+          } else {
+            cleanedData[field.name] = cleaned;
+          }
+        }
+      });
+
+      onSubmit(cleanedData as T);
     }
   };
 
@@ -147,6 +171,90 @@ function DynamicForm<T extends Record<string, any>>({
           disabled={isLoading || isDependentDisabled}
           readOnly={readOnly}
           rows={field.rows || 4}
+        />
+      );
+    }
+
+    // Campo de telefone com seletor de DDI
+    if (field.type === 'phone' && field.withCountryCode) {
+      const selectedDialCode = countryDialCodes[field.name] || '+55';
+
+      return (
+        <div className="flex gap-2">
+          {/* Seletor de país com bandeira */}
+          <select
+            value={selectedDialCode}
+            onChange={(e) => {
+              setCountryDialCodes(prev => ({
+                ...prev,
+                [field.name]: e.target.value
+              }));
+            }}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
+            disabled={isLoading || isDependentDisabled || readOnly}
+            style={{ minWidth: '120px' }}
+          >
+            {COUNTRY_CODES.map(country => (
+              <option key={country.code} value={country.dialCode}>
+                {country.flag} {country.dialCode}
+              </option>
+            ))}
+          </select>
+
+          {/* Campo de telefone com máscara */}
+          <input
+            type="tel"
+            value={formData[field.name] || ''}
+            onChange={(e) => {
+              const masked = applyPhoneMask(e.target.value);
+              handleChange(field.name, masked);
+            }}
+            disabled={isLoading || isDependentDisabled}
+            readOnly={readOnly}
+            placeholder={field.placeholder || '(00) 00000-0000'}
+            className={`flex-1 ${commonClasses}`}
+            maxLength={15}
+          />
+        </div>
+      );
+    }
+
+    // Campo de documento com máscara dinâmica
+    if (field.type === 'document' && field.documentTypeField) {
+      const documentType = formData[field.documentTypeField];
+
+      return (
+        <input
+          type="text"
+          value={formData[field.name] || ''}
+          onChange={(e) => {
+            const masked = applyDocumentMask(e.target.value, documentType);
+            handleChange(field.name, masked);
+          }}
+          placeholder={field.placeholder}
+          className={commonClasses}
+          disabled={isLoading || isDependentDisabled}
+          readOnly={readOnly}
+          maxLength={20}
+        />
+      );
+    }
+
+    // Campo de telefone simples (sem DDI)
+    if (field.type === 'phone') {
+      return (
+        <input
+          type="tel"
+          value={formData[field.name] || ''}
+          onChange={(e) => {
+            const masked = applyPhoneMask(e.target.value);
+            handleChange(field.name, masked);
+          }}
+          disabled={isLoading || isDependentDisabled}
+          readOnly={readOnly}
+          placeholder={field.placeholder || '(00) 00000-0000'}
+          className={commonClasses}
+          maxLength={15}
         />
       );
     }

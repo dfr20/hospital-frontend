@@ -30,10 +30,11 @@ export const hospitalFormFields: FieldConfig[] = [
   {
     name: 'document',
     label: 'Documento',
-    type: 'text',
+    type: 'document',
     placeholder: 'Digite o documento',
     required: true,
-    dependsOn: 'document_type'
+    dependsOn: 'document_type',
+    documentTypeField: 'document_type'
   },
   {
     name: 'email',
@@ -45,9 +46,10 @@ export const hospitalFormFields: FieldConfig[] = [
   {
     name: 'phone',
     label: 'Telefone',
-    type: 'tel',
+    type: 'phone',
     placeholder: '(00) 00000-0000',
-    required: true
+    required: true,
+    withCountryCode: true
   },
   {
     name: 'city',

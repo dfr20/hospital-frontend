@@ -7,11 +7,11 @@ import Pagination from "../../Components/Common/Table/Pagination";
 import Modal from "../../Components/Common/Modal/Modal";
 import DynamicForm from "../../Components/Common/Modal/DynamicForm";
 import ConfirmationModal from "../../Components/Common/Modal/ConfirmationModal";
-import SearchData from "../../Components/Utils/SearchData";
 import type { Hospital, HospitalPayload } from "../../Types/Hospital";
 import { useHospital } from "../../Hooks/useHospital";
 import { hospitalFormFields } from "./HospitalFormConfigs";
 import { useToast } from "../../Contexts/ToastContext";
+import { getErrorMessage } from "../../Utils/errorHandler";
 
 // Tipo estendido para incluir 'id' necessário para o componente Table
 type HospitalWithId = Hospital & { id: string };
@@ -25,6 +25,7 @@ const Hospitals: React.FC = () => {
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [hospitalToDelete, setHospitalToDelete] = useState<HospitalWithId | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const itemsPerPage = 10;
 
   const toast = useToast();
@@ -38,6 +39,20 @@ const Hospitals: React.FC = () => {
     ...hospital,
     id: hospital.public_id
   }));
+
+  // Filtrar hospitais baseado no termo de busca
+  const filteredHospitals = hospitalsWithId.filter((hospital) => {
+    if (!searchTerm) return true;
+
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    return (
+      hospital.name.toLowerCase().includes(lowerSearchTerm) ||
+      hospital.document.toLowerCase().includes(lowerSearchTerm) ||
+      hospital.city.toLowerCase().includes(lowerSearchTerm) ||
+      hospital.email.toLowerCase().includes(lowerSearchTerm) ||
+      hospital.phone.toLowerCase().includes(lowerSearchTerm)
+    );
+  });
 
   // Definição das colunas da tabela
   const columns: Column<HospitalWithId>[] = [
@@ -112,7 +127,7 @@ const Hospitals: React.FC = () => {
       setHospitalToDelete(null);
     } catch (error) {
       console.error('Erro ao excluir hospital:', error);
-      toast.error('Erro ao excluir', 'Não foi possível excluir o hospital. Tente novamente.');
+      toast.error('Erro ao excluir', getErrorMessage(error));
     } finally {
       setIsDeleting(false);
     }
@@ -155,7 +170,7 @@ const Hospitals: React.FC = () => {
           },
           onError: (error) => {
             console.error('Erro ao editar hospital:', error);
-            toast.error('Erro ao atualizar', 'Não foi possível atualizar o hospital. Tente novamente.');
+            toast.error('Erro ao atualizar', getErrorMessage(error));
           }
         }
       );
@@ -168,7 +183,7 @@ const Hospitals: React.FC = () => {
         },
         onError: (error) => {
           console.error('Erro ao criar hospital:', error);
-          toast.error('Erro ao criar', 'Não foi possível criar o hospital. Tente novamente.');
+          toast.error('Erro ao criar', getErrorMessage(error));
         }
       });
     }
@@ -195,11 +210,12 @@ const Hospitals: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Campo de Busca */}
             <div className="flex-1">
-              <SearchData
-                onSelect={(item) => {
-                  console.log('Hospital selecionado:', item);
-                  // Aqui você pode adicionar lógica para filtrar ou navegar
-                }}
+              <input
+                type="text"
+                placeholder="Buscar hospitais..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
               />
             </div>
 
@@ -229,19 +245,21 @@ const Hospitals: React.FC = () => {
           ) : (
             <>
               <Table<HospitalWithId>
-                data={hospitalsWithId}
+                data={filteredHospitals}
                 columns={columns}
                 onView={handleView}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
-                emptyMessage="Nenhum hospital encontrado"
+                emptyMessage={searchTerm ? "Nenhum hospital encontrado com esse termo" : "Nenhum hospital encontrado"}
               />
-              <Pagination
-                currentPage={currentPage}
-                totalItems={hospitalsData?.total || 0}
-                itemsPerPage={itemsPerPage}
-                onPageChange={handlePageChange}
-              />
+              {!searchTerm && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={hospitalsData?.total || 0}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={handlePageChange}
+                />
+              )}
             </>
           )}
         </div>
