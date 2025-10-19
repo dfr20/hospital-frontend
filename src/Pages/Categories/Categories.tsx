@@ -5,120 +5,103 @@ import Table from "../../Components/Common/Table/Table";
 import type { Column } from "../../Components/Common/Table/Table";
 import Pagination from "../../Components/Common/Table/Pagination";
 import Modal from "../../Components/Common/Modal/Modal";
+import DynamicForm from "../../Components/Common/Modal/DynamicForm";
 import ConfirmationModal from "../../Components/Common/Modal/ConfirmationModal";
-import type { Catalog, CatalogPayload } from "../../Types/Catalog";
-import { useCatalog } from "../../Hooks/useCatalog";
+import type { Category, CategoryPayload } from "../../Types/Category";
+import { useCategories } from "../../Hooks/useCategories";
+import { categoryFormFields } from "./CategoryFormConfigs";
 import { useToast } from "../../Contexts/ToastContext";
 import { getErrorMessage } from "../../Utils/errorHandler";
-import CatalogForm from "./CatalogForm";
 
 // Tipo estendido para incluir 'id' necessário para o componente Table
-type CatalogWithId = Catalog & { id: string };
+type CategoryWithId = Category & { id: string };
 
-const Catalogs: React.FC = () => {
+const Categories: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedCatalog, setSelectedCatalog] = useState<CatalogWithId | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryWithId | null>(null);
   const [isViewMode, setIsViewMode] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
-  const [catalogToDelete, setCatalogToDelete] = useState<CatalogWithId | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<CategoryWithId | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const itemsPerPage = 10;
 
   const toast = useToast();
-  const { fetchCatalogs, createCatalog, updateCatalog, deleteCatalog } = useCatalog();
-  const { data: catalogsData, isLoading, error } = fetchCatalogs(currentPage, itemsPerPage);
-  const { mutate: createCatalogMutation, isPending: isCreating } = createCatalog();
-  const { mutate: updateCatalogMutation, isPending: isUpdating } = updateCatalog();
+  const { fetchCategories, createCategory, updateCategory, deleteCategory } = useCategories();
+
+  const { data: categoriesData, isLoading, error } = fetchCategories(currentPage, itemsPerPage);
+  const { mutate: createCategoryMutation, isPending: isCreating } = createCategory();
+  const { mutate: updateCategoryMutation, isPending: isUpdating } = updateCategory();
 
   // Adaptar dados para incluir 'id' baseado em 'public_id'
-  const catalogsWithId: CatalogWithId[] = (catalogsData?.items || []).map((catalog: Catalog) => ({
-    ...catalog,
-    id: catalog.public_id
+  const categoriesWithId: CategoryWithId[] = (categoriesData?.items || []).map((category: Category) => ({
+    ...category,
+    id: category.public_id
   }));
 
-  // Filtrar catálogo baseado no termo de busca (incluindo similar_names)
-  const filteredCatalogs = catalogsWithId.filter((catalog) => {
+  // Filtrar categorias baseado no termo de busca
+  const filteredCategories = categoriesWithId.filter((category) => {
     if (!searchTerm) return true;
 
     const lowerSearchTerm = searchTerm.toLowerCase();
+
     return (
-      catalog.name.toLowerCase().includes(lowerSearchTerm) ||
-      catalog.description.toLowerCase().includes(lowerSearchTerm) ||
-      catalog.presentation.toLowerCase().includes(lowerSearchTerm) ||
-      catalog.similar_names.some(name => name.toLowerCase().includes(lowerSearchTerm))
+      category.name.toLowerCase().includes(lowerSearchTerm) ||
+      category.description.toLowerCase().includes(lowerSearchTerm)
     );
   });
 
   // Definição das colunas da tabela
-  const columns: Column<CatalogWithId>[] = [
+  const columns: Column<CategoryWithId>[] = [
     {
       key: 'name',
       header: 'Nome',
-      render: (catalog) => (
-        <div className="text-sm font-medium text-gray-900">{catalog.name}</div>
+      render: (category) => (
+        <div className="text-sm font-medium text-gray-900">{category.name}</div>
       )
     },
     {
       key: 'description',
       header: 'Descrição',
       hideOnMobile: true,
-      render: (catalog) => (
-        <div className="text-sm text-gray-500">{catalog.description}</div>
-      )
-    },
-    {
-      key: 'presentation',
-      header: 'Apresentação',
-      hideOnTablet: true,
-      render: (catalog) => (
-        <div className="text-sm text-gray-500">{catalog.presentation}</div>
-      )
-    },
-    {
-      key: 'created_at',
-      header: 'Data de Criação',
-      hideOnTablet: true,
-      render: (catalog) => (
-        <div className="text-sm text-gray-500">
-          {new Date(catalog.created_at).toLocaleDateString('pt-BR')}
-        </div>
+      render: (category) => (
+        <div className="text-sm text-gray-500">{category.description}</div>
       )
     }
   ];
 
-  const handleView = (catalog: CatalogWithId) => {
-    setSelectedCatalog(catalog);
+  const handleView = (category: CategoryWithId) => {
+    setSelectedCategory(category);
     setIsViewMode(true);
     setIsEditMode(false);
     setIsModalOpen(true);
   };
 
-  const handleEdit = (catalog: CatalogWithId) => {
-    setSelectedCatalog(catalog);
+  const handleEdit = (category: CategoryWithId) => {
+    setSelectedCategory(category);
     setIsEditMode(true);
     setIsViewMode(false);
     setIsModalOpen(true);
   };
 
-  const handleDelete = (catalog: CatalogWithId) => {
-    setCatalogToDelete(catalog);
+  const handleDelete = (category: CategoryWithId) => {
+    setCategoryToDelete(category);
     setIsConfirmationOpen(true);
   };
 
   const handleConfirmDelete = async () => {
-    if (!catalogToDelete) return;
+    if (!categoryToDelete) return;
 
     setIsDeleting(true);
     try {
-      await deleteCatalog(catalogToDelete.public_id);
-      toast.success('Item excluído', 'Item do catálogo excluído com sucesso!');
+      await deleteCategory(categoryToDelete.public_id);
+      toast.success('Categoria excluída', 'Categoria excluída com sucesso!');
       setIsConfirmationOpen(false);
-      setCatalogToDelete(null);
+      setCategoryToDelete(null);
     } catch (error) {
-      console.error('Erro ao excluir item do catálogo:', error);
+      console.error('Erro ao excluir categoria:', error);
       toast.error('Erro ao excluir', getErrorMessage(error));
     } finally {
       setIsDeleting(false);
@@ -127,15 +110,15 @@ const Catalogs: React.FC = () => {
 
   const handleCancelDelete = () => {
     setIsConfirmationOpen(false);
-    setCatalogToDelete(null);
+    setCategoryToDelete(null);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const handleNewCatalog = () => {
-    setSelectedCatalog(null);
+  const handleNewCategory = () => {
+    setSelectedCategory(null);
     setIsViewMode(false);
     setIsEditMode(false);
     setIsModalOpen(true);
@@ -143,38 +126,38 @@ const Catalogs: React.FC = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedCatalog(null);
+    setSelectedCategory(null);
     setIsViewMode(false);
     setIsEditMode(false);
   };
 
-  const handleSubmitCatalog = (data: CatalogPayload) => {
-    if (isEditMode && selectedCatalog) {
+  const handleSubmitCategory = (data: CategoryPayload) => {
+    if (isEditMode && selectedCategory) {
       // Modo de edição
-      updateCatalogMutation(
-        { id: selectedCatalog.public_id, data },
+      updateCategoryMutation(
+        { id: selectedCategory.public_id, data },
         {
           onSuccess: () => {
-            toast.success('Item atualizado', 'Item do catálogo atualizado com sucesso!');
+            toast.success('Categoria atualizada', 'Categoria atualizada com sucesso!');
             setIsModalOpen(false);
-            setSelectedCatalog(null);
+            setSelectedCategory(null);
             setIsEditMode(false);
           },
           onError: (error) => {
-            console.error('Erro ao editar item do catálogo:', error);
+            console.error('Erro ao editar categoria:', error);
             toast.error('Erro ao atualizar', getErrorMessage(error));
           }
         }
       );
     } else {
       // Modo de criação
-      createCatalogMutation(data, {
+      createCategoryMutation(data, {
         onSuccess: () => {
-          toast.success('Item criado', 'Item do catálogo criado com sucesso!');
+          toast.success('Categoria criada', 'Categoria criada com sucesso!');
           setIsModalOpen(false);
         },
         onError: (error) => {
-          console.error('Erro ao criar item do catálogo:', error);
+          console.error('Erro ao criar categoria:', error);
           toast.error('Erro ao criar', getErrorMessage(error));
         }
       });
@@ -186,13 +169,19 @@ const Catalogs: React.FC = () => {
       <Layout>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Erro ao carregar catálogo</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Erro ao carregar categorias</h3>
             <p className="text-gray-500">Tente novamente mais tarde</p>
           </div>
         </div>
       </Layout>
     );
   }
+
+  // Preparar valores iniciais para o formulário
+  const initialValues = selectedCategory ? {
+    name: selectedCategory.name,
+    description: selectedCategory.description
+  } : undefined;
 
   return (
     <Layout>
@@ -204,7 +193,7 @@ const Catalogs: React.FC = () => {
             <div className="flex-1">
               <input
                 type="text"
-                placeholder="Buscar itens do catálogo..."
+                placeholder="Buscar categorias..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
@@ -218,17 +207,17 @@ const Catalogs: React.FC = () => {
                 <span className="hidden sm:inline">Filtrar</span>
               </button>
               <button
-                onClick={handleNewCatalog}
+                onClick={handleNewCategory}
                 className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Novo Item</span>
+                <span className="hidden sm:inline">Nova Categoria</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Tabela de Catálogo */}
+        {/* Tabela de Categorias */}
         <div>
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
@@ -236,18 +225,18 @@ const Catalogs: React.FC = () => {
             </div>
           ) : (
             <>
-              <Table<CatalogWithId>
-                data={filteredCatalogs}
+              <Table<CategoryWithId>
+                data={filteredCategories}
                 columns={columns}
                 onView={handleView}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
-                emptyMessage={searchTerm ? "Nenhum item encontrado com esse termo" : "Nenhum item encontrado no catálogo"}
+                emptyMessage={searchTerm ? "Nenhuma categoria encontrada com esse termo" : "Nenhuma categoria encontrada"}
               />
               {!searchTerm && (
                 <Pagination
                   currentPage={currentPage}
-                  totalItems={catalogsData?.total || 0}
+                  totalItems={categoriesData?.total || 0}
                   itemsPerPage={itemsPerPage}
                   onPageChange={handlePageChange}
                 />
@@ -263,17 +252,20 @@ const Catalogs: React.FC = () => {
         onClose={handleCloseModal}
         title={
           isViewMode
-            ? "Detalhes do Item"
+            ? "Detalhes da Categoria"
             : isEditMode
-            ? "Editar Item"
-            : "Criar Novo Item"
+            ? "Editar Categoria"
+            : "Criar Nova Categoria"
         }
       >
-        <CatalogForm
-          onSubmit={handleSubmitCatalog}
+        <DynamicForm<CategoryPayload>
+          fields={categoryFormFields}
+          onSubmit={handleSubmitCategory}
           onCancel={handleCloseModal}
           isLoading={isCreating || isUpdating}
-          initialValues={selectedCatalog || undefined}
+          submitLabel={isEditMode ? "Salvar Alterações" : "Criar Categoria"}
+          cancelLabel="Cancelar"
+          initialValues={initialValues}
           readOnly={isViewMode}
         />
       </Modal>
@@ -283,8 +275,8 @@ const Catalogs: React.FC = () => {
         isOpen={isConfirmationOpen}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        title="Excluir Item"
-        message={`Tem certeza que deseja excluir "${catalogToDelete?.name}"? Esta ação não pode ser desfeita.`}
+        title="Excluir Categoria"
+        message={`Tem certeza que deseja excluir a categoria "${categoryToDelete?.name}"? Esta ação não pode ser desfeita.`}
         confirmLabel="Excluir"
         cancelLabel="Cancelar"
         isLoading={isDeleting}
@@ -294,4 +286,4 @@ const Catalogs: React.FC = () => {
   );
 };
 
-export default Catalogs;
+export default Categories;

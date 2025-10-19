@@ -44,6 +44,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
   };
 
 
@@ -52,6 +53,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const response = await api.get('/users/me');
       const userData: UserMeResponse = response.data;
       setUser(userData);
+      // Salva os dados do usuário no localStorage para uso nas permissões
+      localStorage.setItem('user', JSON.stringify(userData));
     } catch (error) {
       console.error('Failed to fetch user data:', error);
       clearTokens();

@@ -16,6 +16,22 @@ export interface HeaderDataType {
 
 // Configuração de headers por rota
 export const headerConfigs: Record<string, HeaderDataType> = {
+  '/dashboard': {
+    breadcrumb: ['Admin', 'Dashboard'],
+    title: 'Dashboard',
+    actions: [
+      { id: 'settings', icon: Settings, type: 'icon' },
+      { id: 'logout', icon: LogOut, type: 'icon' }
+    ]
+  },
+  '/bids': {
+    breadcrumb: ['Admin', 'Bids'],
+    title: 'Licitações',
+    actions: [
+      { id: 'settings', icon: Settings, type: 'icon' },
+      { id: 'logout', icon: LogOut, type: 'icon' }
+    ]
+  },
   '/users': {
     breadcrumb: ['Admin', 'Users'],
     title: 'Usuários',
@@ -27,14 +43,6 @@ export const headerConfigs: Record<string, HeaderDataType> = {
   '/hospitals': {
     breadcrumb: ['Admin', 'Hospitals'],
     title: 'Hospitais',
-    actions: [
-      { id: 'settings', icon: Settings, type: 'icon' },
-      { id: 'logout', icon: LogOut, type: 'icon' }
-    ]
-  },
-  '/dashboard': {
-    breadcrumb: ['Admin', 'Dashboard'],
-    title: 'Dashboard',
     actions: [
       { id: 'settings', icon: Settings, type: 'icon' },
       { id: 'logout', icon: LogOut, type: 'icon' }
@@ -55,8 +63,31 @@ export const headerConfigs: Record<string, HeaderDataType> = {
       { id: 'settings', icon: Settings, type: 'icon' },
       { id: 'logout', icon: LogOut, type: 'icon' }
     ]
+  },
+  '/categories': {
+    breadcrumb: ['Admin', 'Categories'],
+    title: 'Categorias',
+    actions: [
+      { id: 'settings', icon: Settings, type: 'icon' },
+      { id: 'logout', icon: LogOut, type: 'icon' }
+    ]
+  },
+  '/subcategories': {
+    breadcrumb: ['Admin', 'Subcategories'],
+    title: 'Subcategorias',
+    actions: [
+      { id: 'settings', icon: Settings, type: 'icon' },
+      { id: 'logout', icon: LogOut, type: 'icon' }
+    ]
+  },
+  '/items': {
+    breadcrumb: ['Admin', 'Items'],
+    title: 'Items',
+    actions: [
+      { id: 'settings', icon: Settings, type: 'icon' },
+      { id: 'logout', icon: LogOut, type: 'icon' }
+    ]
   }
-
 };
 
 // Header padrão (fallback)

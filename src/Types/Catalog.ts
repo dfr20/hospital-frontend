@@ -1,5 +1,6 @@
 export interface Catalog {
   name: string;
+  similar_names: string[];
   description: string;
   full_description: string;
   presentation: string;
@@ -10,6 +11,7 @@ export interface Catalog {
 
 export interface CatalogPayload {
   name: string;
+  similar_names: string[];
   description: string;
   full_description: string;
   presentation: string;

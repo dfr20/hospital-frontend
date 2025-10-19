@@ -1,124 +1,148 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Layout } from "../../Components/Common/Layout/Layout";
 import { Filter, Plus } from "lucide-react";
 import Table from "../../Components/Common/Table/Table";
 import type { Column } from "../../Components/Common/Table/Table";
 import Pagination from "../../Components/Common/Table/Pagination";
 import Modal from "../../Components/Common/Modal/Modal";
+import DynamicForm from "../../Components/Common/Modal/DynamicForm";
 import ConfirmationModal from "../../Components/Common/Modal/ConfirmationModal";
-import type { Catalog, CatalogPayload } from "../../Types/Catalog";
-import { useCatalog } from "../../Hooks/useCatalog";
+import type { Subcategory, SubcategoryPayload } from "../../Types/Subcategory";
+import { useSubcategories } from "../../Hooks/useSubcategories";
+import { useCategories } from "../../Hooks/useCategories";
+import { subcategoryFormFields } from "./SubcategoryFormConfigs";
 import { useToast } from "../../Contexts/ToastContext";
 import { getErrorMessage } from "../../Utils/errorHandler";
-import CatalogForm from "./CatalogForm";
+import type { FieldConfig } from "../../Components/Common/Modal/DynamicForm";
 
 // Tipo estendido para incluir 'id' necessário para o componente Table
-type CatalogWithId = Catalog & { id: string };
+type SubcategoryWithId = Subcategory & { id: string };
 
-const Catalogs: React.FC = () => {
+const Subcategories: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedCatalog, setSelectedCatalog] = useState<CatalogWithId | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<SubcategoryWithId | null>(null);
   const [isViewMode, setIsViewMode] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
-  const [catalogToDelete, setCatalogToDelete] = useState<CatalogWithId | null>(null);
+  const [subcategoryToDelete, setSubcategoryToDelete] = useState<SubcategoryWithId | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const itemsPerPage = 10;
 
   const toast = useToast();
-  const { fetchCatalogs, createCatalog, updateCatalog, deleteCatalog } = useCatalog();
-  const { data: catalogsData, isLoading, error } = fetchCatalogs(currentPage, itemsPerPage);
-  const { mutate: createCatalogMutation, isPending: isCreating } = createCatalog();
-  const { mutate: updateCatalogMutation, isPending: isUpdating } = updateCatalog();
+  const { fetchSubcategories, createSubcategory, updateSubcategory, deleteSubcategory } = useSubcategories();
+  const { fetchCategories } = useCategories();
+
+  const { data: subcategoriesData, isLoading, error } = fetchSubcategories(currentPage, itemsPerPage);
+  const { data: categoriesData } = fetchCategories(1, 100); // Buscar todas as categorias para o dropdown
+  const { mutate: createSubcategoryMutation, isPending: isCreating } = createSubcategory();
+  const { mutate: updateSubcategoryMutation, isPending: isUpdating } = updateSubcategory();
 
   // Adaptar dados para incluir 'id' baseado em 'public_id'
-  const catalogsWithId: CatalogWithId[] = (catalogsData?.items || []).map((catalog: Catalog) => ({
-    ...catalog,
-    id: catalog.public_id
+  const subcategoriesWithId: SubcategoryWithId[] = (subcategoriesData?.items || []).map((subcategory: Subcategory) => ({
+    ...subcategory,
+    id: subcategory.public_id
   }));
 
-  // Filtrar catálogo baseado no termo de busca (incluindo similar_names)
-  const filteredCatalogs = catalogsWithId.filter((catalog) => {
+  // Criar mapa de categorias para exibição
+  const categoriesMap = useMemo(() => {
+    if (!categoriesData?.items) return {};
+    return categoriesData.items.reduce((acc, cat) => {
+      acc[cat.public_id] = cat.name;
+      return acc;
+    }, {} as Record<string, string>);
+  }, [categoriesData]);
+
+  // Configurar opções de categorias dinamicamente
+  const formFieldsWithCategories: FieldConfig[] = useMemo(() => {
+    return subcategoryFormFields.map(field => {
+      if (field.name === 'category_id') {
+        return {
+          ...field,
+          options: categoriesData?.items.map(cat => ({
+            value: cat.public_id,
+            label: cat.name
+          })) || []
+        };
+      }
+      return field;
+    });
+  }, [categoriesData]);
+
+  // Filtrar subcategorias baseado no termo de busca
+  const filteredSubcategories = subcategoriesWithId.filter((subcategory) => {
     if (!searchTerm) return true;
 
     const lowerSearchTerm = searchTerm.toLowerCase();
+    const categoryName = categoriesMap[subcategory.category_public_id]?.toLowerCase() || '';
+
     return (
-      catalog.name.toLowerCase().includes(lowerSearchTerm) ||
-      catalog.description.toLowerCase().includes(lowerSearchTerm) ||
-      catalog.presentation.toLowerCase().includes(lowerSearchTerm) ||
-      catalog.similar_names.some(name => name.toLowerCase().includes(lowerSearchTerm))
+      subcategory.name.toLowerCase().includes(lowerSearchTerm) ||
+      subcategory.description.toLowerCase().includes(lowerSearchTerm) ||
+      categoryName.includes(lowerSearchTerm)
     );
   });
 
   // Definição das colunas da tabela
-  const columns: Column<CatalogWithId>[] = [
+  const columns: Column<SubcategoryWithId>[] = [
     {
       key: 'name',
       header: 'Nome',
-      render: (catalog) => (
-        <div className="text-sm font-medium text-gray-900">{catalog.name}</div>
+      render: (subcategory) => (
+        <div className="text-sm font-medium text-gray-900">{subcategory.name}</div>
       )
     },
     {
       key: 'description',
       header: 'Descrição',
       hideOnMobile: true,
-      render: (catalog) => (
-        <div className="text-sm text-gray-500">{catalog.description}</div>
+      render: (subcategory) => (
+        <div className="text-sm text-gray-500">{subcategory.description}</div>
       )
     },
     {
-      key: 'presentation',
-      header: 'Apresentação',
+      key: 'category_public_id',
+      header: 'Categoria',
       hideOnTablet: true,
-      render: (catalog) => (
-        <div className="text-sm text-gray-500">{catalog.presentation}</div>
-      )
-    },
-    {
-      key: 'created_at',
-      header: 'Data de Criação',
-      hideOnTablet: true,
-      render: (catalog) => (
+      render: (subcategory) => (
         <div className="text-sm text-gray-500">
-          {new Date(catalog.created_at).toLocaleDateString('pt-BR')}
+          {categoriesMap[subcategory.category_public_id] || 'N/A'}
         </div>
       )
     }
   ];
 
-  const handleView = (catalog: CatalogWithId) => {
-    setSelectedCatalog(catalog);
+  const handleView = (subcategory: SubcategoryWithId) => {
+    setSelectedSubcategory(subcategory);
     setIsViewMode(true);
     setIsEditMode(false);
     setIsModalOpen(true);
   };
 
-  const handleEdit = (catalog: CatalogWithId) => {
-    setSelectedCatalog(catalog);
+  const handleEdit = (subcategory: SubcategoryWithId) => {
+    setSelectedSubcategory(subcategory);
     setIsEditMode(true);
     setIsViewMode(false);
     setIsModalOpen(true);
   };
 
-  const handleDelete = (catalog: CatalogWithId) => {
-    setCatalogToDelete(catalog);
+  const handleDelete = (subcategory: SubcategoryWithId) => {
+    setSubcategoryToDelete(subcategory);
     setIsConfirmationOpen(true);
   };
 
   const handleConfirmDelete = async () => {
-    if (!catalogToDelete) return;
+    if (!subcategoryToDelete) return;
 
     setIsDeleting(true);
     try {
-      await deleteCatalog(catalogToDelete.public_id);
-      toast.success('Item excluído', 'Item do catálogo excluído com sucesso!');
+      await deleteSubcategory(subcategoryToDelete.public_id);
+      toast.success('Subcategoria excluída', 'Subcategoria excluída com sucesso!');
       setIsConfirmationOpen(false);
-      setCatalogToDelete(null);
+      setSubcategoryToDelete(null);
     } catch (error) {
-      console.error('Erro ao excluir item do catálogo:', error);
+      console.error('Erro ao excluir subcategoria:', error);
       toast.error('Erro ao excluir', getErrorMessage(error));
     } finally {
       setIsDeleting(false);
@@ -127,15 +151,15 @@ const Catalogs: React.FC = () => {
 
   const handleCancelDelete = () => {
     setIsConfirmationOpen(false);
-    setCatalogToDelete(null);
+    setSubcategoryToDelete(null);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const handleNewCatalog = () => {
-    setSelectedCatalog(null);
+  const handleNewSubcategory = () => {
+    setSelectedSubcategory(null);
     setIsViewMode(false);
     setIsEditMode(false);
     setIsModalOpen(true);
@@ -143,38 +167,38 @@ const Catalogs: React.FC = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedCatalog(null);
+    setSelectedSubcategory(null);
     setIsViewMode(false);
     setIsEditMode(false);
   };
 
-  const handleSubmitCatalog = (data: CatalogPayload) => {
-    if (isEditMode && selectedCatalog) {
+  const handleSubmitSubcategory = (data: SubcategoryPayload) => {
+    if (isEditMode && selectedSubcategory) {
       // Modo de edição
-      updateCatalogMutation(
-        { id: selectedCatalog.public_id, data },
+      updateSubcategoryMutation(
+        { id: selectedSubcategory.public_id, data },
         {
           onSuccess: () => {
-            toast.success('Item atualizado', 'Item do catálogo atualizado com sucesso!');
+            toast.success('Subcategoria atualizada', 'Subcategoria atualizada com sucesso!');
             setIsModalOpen(false);
-            setSelectedCatalog(null);
+            setSelectedSubcategory(null);
             setIsEditMode(false);
           },
           onError: (error) => {
-            console.error('Erro ao editar item do catálogo:', error);
+            console.error('Erro ao editar subcategoria:', error);
             toast.error('Erro ao atualizar', getErrorMessage(error));
           }
         }
       );
     } else {
       // Modo de criação
-      createCatalogMutation(data, {
+      createSubcategoryMutation(data, {
         onSuccess: () => {
-          toast.success('Item criado', 'Item do catálogo criado com sucesso!');
+          toast.success('Subcategoria criada', 'Subcategoria criada com sucesso!');
           setIsModalOpen(false);
         },
         onError: (error) => {
-          console.error('Erro ao criar item do catálogo:', error);
+          console.error('Erro ao criar subcategoria:', error);
           toast.error('Erro ao criar', getErrorMessage(error));
         }
       });
@@ -186,13 +210,19 @@ const Catalogs: React.FC = () => {
       <Layout>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Erro ao carregar catálogo</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Erro ao carregar subcategorias</h3>
             <p className="text-gray-500">Tente novamente mais tarde</p>
           </div>
         </div>
       </Layout>
     );
   }
+
+  // Preparar valores iniciais para o formulário
+  const initialValues = selectedSubcategory ? {
+    ...selectedSubcategory,
+    category_id: selectedSubcategory.category_public_id
+  } : undefined;
 
   return (
     <Layout>
@@ -204,7 +234,7 @@ const Catalogs: React.FC = () => {
             <div className="flex-1">
               <input
                 type="text"
-                placeholder="Buscar itens do catálogo..."
+                placeholder="Buscar subcategorias..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
@@ -218,17 +248,17 @@ const Catalogs: React.FC = () => {
                 <span className="hidden sm:inline">Filtrar</span>
               </button>
               <button
-                onClick={handleNewCatalog}
+                onClick={handleNewSubcategory}
                 className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Novo Item</span>
+                <span className="hidden sm:inline">Nova Subcategoria</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Tabela de Catálogo */}
+        {/* Tabela de Subcategorias */}
         <div>
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
@@ -236,18 +266,18 @@ const Catalogs: React.FC = () => {
             </div>
           ) : (
             <>
-              <Table<CatalogWithId>
-                data={filteredCatalogs}
+              <Table<SubcategoryWithId>
+                data={filteredSubcategories}
                 columns={columns}
                 onView={handleView}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
-                emptyMessage={searchTerm ? "Nenhum item encontrado com esse termo" : "Nenhum item encontrado no catálogo"}
+                emptyMessage={searchTerm ? "Nenhuma subcategoria encontrada com esse termo" : "Nenhuma subcategoria encontrada"}
               />
               {!searchTerm && (
                 <Pagination
                   currentPage={currentPage}
-                  totalItems={catalogsData?.total || 0}
+                  totalItems={subcategoriesData?.total || 0}
                   itemsPerPage={itemsPerPage}
                   onPageChange={handlePageChange}
                 />
@@ -263,17 +293,20 @@ const Catalogs: React.FC = () => {
         onClose={handleCloseModal}
         title={
           isViewMode
-            ? "Detalhes do Item"
+            ? "Detalhes da Subcategoria"
             : isEditMode
-            ? "Editar Item"
-            : "Criar Novo Item"
+            ? "Editar Subcategoria"
+            : "Criar Nova Subcategoria"
         }
       >
-        <CatalogForm
-          onSubmit={handleSubmitCatalog}
+        <DynamicForm<SubcategoryPayload>
+          fields={formFieldsWithCategories}
+          onSubmit={handleSubmitSubcategory}
           onCancel={handleCloseModal}
           isLoading={isCreating || isUpdating}
-          initialValues={selectedCatalog || undefined}
+          submitLabel={isEditMode ? "Salvar Alterações" : "Criar Subcategoria"}
+          cancelLabel="Cancelar"
+          initialValues={initialValues}
           readOnly={isViewMode}
         />
       </Modal>
@@ -283,8 +316,8 @@ const Catalogs: React.FC = () => {
         isOpen={isConfirmationOpen}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        title="Excluir Item"
-        message={`Tem certeza que deseja excluir "${catalogToDelete?.name}"? Esta ação não pode ser desfeita.`}
+        title="Excluir Subcategoria"
+        message={`Tem certeza que deseja excluir a subcategoria "${subcategoryToDelete?.name}"? Esta ação não pode ser desfeita.`}
         confirmLabel="Excluir"
         cancelLabel="Cancelar"
         isLoading={isDeleting}
@@ -294,4 +327,4 @@ const Catalogs: React.FC = () => {
   );
 };
 
-export default Catalogs;
+export default Subcategories;

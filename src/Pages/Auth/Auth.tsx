@@ -13,7 +13,7 @@ const Auth: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/users');
+      navigate('/dashboard');
     }
   }, [isAuthenticated, navigate]);
 
@@ -28,7 +28,7 @@ const Auth: React.FC = () => {
 
     try {
       await login(email, password);
-      navigate('/users');
+      navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Erro ao fazer login');
     }

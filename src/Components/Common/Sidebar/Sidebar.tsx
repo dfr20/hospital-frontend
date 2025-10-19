@@ -1,14 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { sidebarData, routeToPageId } from './SidebarData';
+import { hasPermission } from '../../../Utils/permissions';
+import { useAuth } from '../../../Contexts/AuthContext';
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const LogoIcon = sidebarData.logo.icon;
+  const { user } = useAuth();
+
+  // Pega a role do usuário
+  const userRole = useMemo(() => {
+    return user?.role?.name || '';
+  }, [user]);
+
+  // Filtra os itens do menu baseado nas permissões do usuário
+  const filteredMenuItems = useMemo(() => {
+    if (!userRole) {
+      return [];
+    }
+    return sidebarData.menuItems.filter(item => hasPermission(userRole, item.route));
+  }, [userRole]);
 
   // Define o activePage baseado na rota atual
-  const currentPageId = routeToPageId[location.pathname] || 'usuarios';
+  const currentPageId = routeToPageId[location.pathname] || 'dashboard';
   const [activePage, setActivePage] = useState(currentPageId);
 
   // Sincroniza o activePage sempre que a rota mudar
@@ -40,7 +56,7 @@ const Sidebar: React.FC = () => {
       {/* Menu Items */}
       <nav className="flex-1 p-4">
         <div className="space-y-1">
-          {sidebarData.menuItems.map((item) => {
+          {filteredMenuItems.map((item) => {
             const Icon = item.icon;
             return (
               <button

@@ -2,7 +2,7 @@ import { AxiosError } from 'axios';
 
 interface ApiErrorResponse {
   message?: string;
-  detail?: string;
+  detail?: string | Array<{ type: string; loc: string[]; msg: string; input: any }>;
   error?: string;
   errors?: Record<string, string[]>;
 }
@@ -27,7 +27,17 @@ export const getErrorMessage = (error: unknown): string => {
       }
 
       if (data.detail) {
-        return data.detail;
+        // Se detail for um array (formato FastAPI/Pydantic)
+        if (Array.isArray(data.detail)) {
+          const firstError = data.detail[0];
+          if (firstError && firstError.msg) {
+            return firstError.msg;
+          }
+        }
+        // Se detail for uma string
+        if (typeof data.detail === 'string') {
+          return data.detail;
+        }
       }
 
       if (data.error) {
