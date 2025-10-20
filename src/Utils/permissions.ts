@@ -62,7 +62,6 @@ export const hasPermission = (userRole: string, page: string): boolean => {
 
   if (!permission) {
     // Se a página não está na lista de permissões, nega acesso por padrão
-    console.log('🔐 [Permissions] Página não encontrada nas permissões:', page);
     return false;
   }
 
@@ -74,13 +73,6 @@ export const hasPermission = (userRole: string, page: string): boolean => {
   const hasAccess = permission.roles.some(
     role => role.toLowerCase() === normalizedUserRole.toLowerCase()
   );
-
-  console.log('🔐 [Permissions] Verificando permissão:', {
-    userRole: normalizedUserRole,
-    page,
-    rolesPermitidas: permission.roles,
-    hasAccess
-  });
 
   return hasAccess;
 };

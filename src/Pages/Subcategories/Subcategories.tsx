@@ -35,7 +35,7 @@ const Subcategories: React.FC = () => {
   const { fetchCategories } = useCategories();
 
   const { data: subcategoriesData, isLoading, error } = fetchSubcategories(currentPage, itemsPerPage);
-  const { data: categoriesData } = fetchCategories(1, 100); // Buscar todas as categorias para o dropdown
+  const { data: categoriesData } = fetchCategories(1, 25); // Buscar todas as categorias para o dropdown
   const { mutate: createSubcategoryMutation, isPending: isCreating } = createSubcategory();
   const { mutate: updateSubcategoryMutation, isPending: isUpdating } = updateSubcategory();
 
