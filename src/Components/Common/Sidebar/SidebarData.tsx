@@ -1,4 +1,4 @@
-import { Building2, Home, Users, Package, FolderTree, Layers, Briefcase, ShoppingCart, BookOpen } from 'lucide-react';
+import { Building2, Home, Users, Package, FolderTree, Layers, Briefcase, ShoppingCart, BookOpen, Truck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export interface MenuItem {
@@ -18,19 +18,20 @@ export interface SidebarDataType {
 
 export const sidebarData: SidebarDataType = {
   logo: {
-    title: 'Painel do Administrador',
+    title: 'Painel',
     icon: Building2
   },
   menuItems: [
     { id: 'dashboard', label: 'Dashboard', icon: Home, route: '/dashboard' },
     { id: 'usuarios', label: 'Usuários', icon: Users, route: '/users' },
     { id: 'hospitais', label: 'Hospitais', icon: Building2, route: '/hospitals' },
+    { id: 'suppliers', label: 'Fornecedores', icon: Truck, route: '/suppliers' },
     { id: 'catalog', label: 'Catálogo', icon: BookOpen, route: '/catalog' },
     { id: 'items', label: 'Itens', icon: Package, route: '/items' },
     { id: 'categories', label: 'Categorias', icon: FolderTree, route: '/categories' },
     { id: 'subcategories', label: 'Subcategorias', icon: Layers, route: '/subcategories' },
     { id: 'cargos', label: 'Cargos', icon: Briefcase, route: '/job-titles' },
-    { id: 'bids', label: 'Licitações', icon: ShoppingCart, route: '/bids' },
+    { id: 'public-acquisitions', label: 'Licitações Públicas', icon: ShoppingCart, route: '/public-acquisitions' },
   ]
 };
 
@@ -39,10 +40,11 @@ export const routeToPageId: Record<string, string> = {
   '/dashboard': 'dashboard',
   '/users': 'usuarios',
   '/hospitals': 'hospitais',
+  '/suppliers': 'suppliers',
   '/catalog': 'catalog',
   '/items': 'items',
   '/categories': 'categories',
   '/subcategories': 'subcategories',
   '/job-titles': 'cargos',
-  '/bids': 'bids'
+  '/public-acquisitions': 'public-acquisitions'
 };

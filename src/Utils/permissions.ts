@@ -1,7 +1,7 @@
 export const RoleName = {
   DESENVOLVEDOR: 'Desenvolvedor',
   GERENTE: 'Gerente',
-  ADMINISTRATIVO: 'Administrativo',
+  ADMINISTRADOR: 'Administrador',
   PREGOEIRO: 'Pregoeiro'
 } as const;
 
@@ -15,19 +15,19 @@ export interface Permission {
 export const permissions: Permission[] = [
   {
     page: '/users',
-    roles: [RoleName.GERENTE]
+    roles: [RoleName.ADMINISTRADOR, RoleName.DESENVOLVEDOR]
   },
   {
     page: '/items',
-    roles: [RoleName.ADMINISTRATIVO, RoleName.GERENTE]
+    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE]
   },
   {
     page: '/categories',
-    roles: [RoleName.ADMINISTRATIVO, RoleName.GERENTE]
+    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE]
   },
   {
     page: '/subcategories',
-    roles: [RoleName.ADMINISTRATIVO, RoleName.GERENTE]
+    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE]
   },
   {
     page: '/hospitals',
@@ -38,16 +38,20 @@ export const permissions: Permission[] = [
     roles: [RoleName.DESENVOLVEDOR]
   },
   {
+    page: '/suppliers',
+    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE]
+  },
+  {
     page: '/job-titles',
     roles: []
   },
   {
     page: '/dashboard',
-    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRATIVO, RoleName.PREGOEIRO]
+    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO]
   },
   {
-    page: '/bids',
-    roles: [RoleName.PREGOEIRO]
+    page: '/public-acquisitions',
+    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE]
   }
 ];
 

@@ -44,13 +44,13 @@ export function Table<T extends { id: number | string }>({
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${getResponsiveClass(column)}`}
+                  className={`px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider ${getResponsiveClass(column)}`}
                 >
                   {column.header}
                 </th>
               ))}
               {showActions && (
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
                 </th>
               )}
@@ -72,7 +72,7 @@ export function Table<T extends { id: number | string }>({
                   {columns.map((column) => (
                     <td
                       key={column.key}
-                      className={`px-6 py-4 whitespace-nowrap ${column.className || ''} ${getResponsiveClass(column)}`}
+                      className={`px-6 py-4 whitespace-nowrap text-center ${column.className || ''} ${getResponsiveClass(column)}`}
                     >
                       {column.render
                         ? column.render(item)
@@ -81,7 +81,7 @@ export function Table<T extends { id: number | string }>({
                   ))}
                   {showActions && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-3">
+                      <div className="flex gap-3 justify-center">
                         {onView && (
                           <button
                             onClick={() => onView(item)}

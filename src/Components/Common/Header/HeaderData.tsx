@@ -24,17 +24,9 @@ export const headerConfigs: Record<string, HeaderDataType> = {
       { id: 'logout', icon: LogOut, type: 'icon' }
     ]
   },
-  '/bids': {
-    breadcrumb: ['Admin', 'Bids'],
-    title: 'Licitações',
-    actions: [
-      { id: 'settings', icon: Settings, type: 'icon' },
-      { id: 'logout', icon: LogOut, type: 'icon' }
-    ]
-  },
-  '/users': {
-    breadcrumb: ['Admin', 'Users'],
-    title: 'Usuários',
+  '/public-acquisitions': {
+    breadcrumb: ['Admin', 'Public Acquisitions'],
+    title: 'Aquisições Públicas',
     actions: [
       { id: 'settings', icon: Settings, type: 'icon' },
       { id: 'logout', icon: LogOut, type: 'icon' }
@@ -83,6 +75,22 @@ export const headerConfigs: Record<string, HeaderDataType> = {
   '/items': {
     breadcrumb: ['Admin', 'Items'],
     title: 'Items',
+    actions: [
+      { id: 'settings', icon: Settings, type: 'icon' },
+      { id: 'logout', icon: LogOut, type: 'icon' }
+    ]
+  },
+  '/suppliers': {
+    breadcrumb: ['Admin', 'Suppliers'],
+    title: 'Fornecedores',
+    actions: [
+      { id: 'settings', icon: Settings, type: 'icon' },
+      { id: 'logout', icon: LogOut, type: 'icon' }
+    ]
+  },
+  '/users': {
+    breadcrumb: ['Admin', 'Users'],
+    title: 'Usuários',
     actions: [
       { id: 'settings', icon: Settings, type: 'icon' },
       { id: 'logout', icon: LogOut, type: 'icon' }

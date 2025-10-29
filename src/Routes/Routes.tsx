@@ -8,8 +8,10 @@ import Catalogs from '../Pages/Catalog/Catalog';
 import Categories from '../Pages/Categories/Categories';
 import Subcategories from '../Pages/Subcategories/Subcategories';
 import Items from '../Pages/Items/Items';
+import Suppliers from '../Pages/Suppliers/Suppliers';
 import ProtectedRoute from '../Components/Common/ProtectedRoute';
 import RedirectToAllowed from '../Components/Common/RedirectToAllowed';
+import PublicAcquisitions from '../Pages/PublicAcquisitions/PublicAcquisitions';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -78,6 +80,22 @@ const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoute requiredPage="/items">
               <Items />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/suppliers"
+          element={
+            <ProtectedRoute requiredPage="/suppliers">
+              <Suppliers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/public-acquisitions"
+          element={
+            <ProtectedRoute requiredPage="/public-acquisitions">
+              <PublicAcquisitions />
             </ProtectedRoute>
           }
         />
