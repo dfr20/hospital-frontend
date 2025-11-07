@@ -12,6 +12,7 @@ interface Nationality {
 
 interface useUsersHook {
     fetchUsers: (page?: number, size?: number, enabled?: boolean) => ReturnType<typeof useQuery<UserResponse>>;
+    fetchPregoeiros: (page?: number, size?: number) => ReturnType<typeof useQuery<UserResponse>>;
     fetchUserById: (id: string) => ReturnType<typeof useQuery<User>>;
     fetchNationalities: () => ReturnType<typeof useQuery<Nationality[]>>;
     fetchRoles: () => ReturnType<typeof useQuery<Role[]>>;
@@ -33,6 +34,25 @@ export const useUsers = (): useUsersHook => {
                 return response.data;
             },
             enabled: enabled
+        });
+    };
+
+    const fetchPregoeiros = (page = 1, size = 10) => {
+        return useQuery({
+            queryKey: ['users', 'pregoeiros', page, size],
+            queryFn: async (): Promise<UserResponse> => {
+                try {
+                    console.log('Buscando pregoeiros na rota: /users/pregoeiros/list');
+                    const response = await api.get<UserResponse>(`/users/pregoeiros/list?page=${page}&size=${size}`);
+                    console.log('Resposta pregoeiros:', response.data);
+                    return response.data;
+                } catch (error: any) {
+                    console.error('Erro ao buscar pregoeiros:', error);
+                    console.error('Detalhes do erro:', error.response?.data);
+                    throw error;
+                }
+            },
+            retry: false,
         });
     };
 
@@ -146,6 +166,7 @@ export const useUsers = (): useUsersHook => {
 
     return {
         fetchUsers,
+        fetchPregoeiros,
         fetchUserById,
         fetchNationalities,
         fetchRoles,

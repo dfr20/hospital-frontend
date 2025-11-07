@@ -25,8 +25,8 @@ export const headerConfigs: Record<string, HeaderDataType> = {
     ]
   },
   '/public-acquisitions': {
-    breadcrumb: ['Admin', 'Public Acquisitions'],
-    title: 'Aquisições Públicas',
+    breadcrumb: ['Admin', 'Licitações'],
+    title: 'Licitações Públicas',
     actions: [
       { id: 'settings', icon: Settings, type: 'icon' },
       { id: 'logout', icon: LogOut, type: 'icon' }
@@ -57,16 +57,8 @@ export const headerConfigs: Record<string, HeaderDataType> = {
     ]
   },
   '/categories': {
-    breadcrumb: ['Admin', 'Categories'],
-    title: 'Categorias',
-    actions: [
-      { id: 'settings', icon: Settings, type: 'icon' },
-      { id: 'logout', icon: LogOut, type: 'icon' }
-    ]
-  },
-  '/subcategories': {
-    breadcrumb: ['Admin', 'Subcategories'],
-    title: 'Subcategorias',
+    breadcrumb: ['Admin', 'Categorias'],
+    title: 'Categorias e Subcategorias',
     actions: [
       { id: 'settings', icon: Settings, type: 'icon' },
       { id: 'logout', icon: LogOut, type: 'icon' }

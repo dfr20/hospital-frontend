@@ -8,6 +8,7 @@ import type {
 
 interface UseItemsInterface {
     fetchItems: (page?: number, size?: number) => ReturnType<typeof useQuery<ItemResponse>>;
+    searchItems: (searchTerm: string) => ReturnType<typeof useQuery<ItemResponse>>;
     createItem: () => ReturnType<typeof useMutation<Item, Error, ItemPayload>>;
     updateItem: () => ReturnType<typeof useMutation<Item, Error, { id: string; data: ItemPayload }>>;
     deleteItem: (id: string) => Promise<void>;
@@ -26,6 +27,17 @@ export const useItems = (): UseItemsInterface => {
                 const response = await api.get<ItemResponse>(`/items?page=${page}&size=${size}`);
                 return response.data;
             },
+        });
+    };
+
+    const searchItems = (searchTerm: string) => {
+        return useQuery({
+            queryKey: ['items', 'search', searchTerm],
+            queryFn: async (): Promise<ItemResponse> => {
+                const response = await api.get<ItemResponse>(`/items/?unified=${encodeURIComponent(searchTerm)}`);
+                return response.data;
+            },
+            enabled: searchTerm.length >= 2,
         });
     };
 
@@ -91,6 +103,7 @@ export const useItems = (): UseItemsInterface => {
 
     return {
         fetchItems,
+        searchItems,
         createItem,
         updateItem,
         deleteItem,

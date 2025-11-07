@@ -4,6 +4,7 @@ import type { Supplier, SupplierPayload, SupplierResponse } from '../Types/Suppl
 
 interface UseSuppliersInterface {
     fetchSuppliers: (page?: number, size?: number) => ReturnType<typeof useQuery<SupplierResponse>>;
+    searchSuppliers: (searchTerm: string) => ReturnType<typeof useQuery<SupplierResponse>>;
     createSupplier: () => ReturnType<typeof useMutation<Supplier, Error, SupplierPayload>>;
     updateSupplier: () => ReturnType<typeof useMutation<Supplier, Error, { id: string; data: SupplierPayload }>>;
     deleteSupplier: (id: string) => Promise<void>;
@@ -21,6 +22,17 @@ export const useSuppliers = (): UseSuppliersInterface => {
                 const response = await api.get<SupplierResponse>(`/suppliers?page=${page}&size=${size}`);
                 return response.data;
             },
+        });
+    };
+
+    const searchSuppliers = (searchTerm: string) => {
+        return useQuery({
+            queryKey: ['suppliers', 'search', searchTerm],
+            queryFn: async (): Promise<SupplierResponse> => {
+                const response = await api.get<SupplierResponse>(`/suppliers/?search=${encodeURIComponent(searchTerm)}`);
+                return response.data;
+            },
+            enabled: searchTerm.length >= 2,
         });
     };
 
@@ -81,6 +93,7 @@ export const useSuppliers = (): UseSuppliersInterface => {
 
     return {
         fetchSuppliers,
+        searchSuppliers,
         createSupplier,
         updateSupplier,
         deleteSupplier,

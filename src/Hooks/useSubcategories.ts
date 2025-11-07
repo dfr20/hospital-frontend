@@ -34,6 +34,11 @@ export const useSubcategories = (): UseSubcategoriesInterface => {
                 queryClient.invalidateQueries({
                     queryKey: ['subcategories']
                 });
+                
+                // Invalida também as categorias com subcategorias
+                queryClient.invalidateQueries({
+                    queryKey: ['categories', 'with-subcategories']
+                });
 
                 queryClient.setQueryData(
                     ['subcategory', newSubcategory.public_id],
@@ -54,6 +59,11 @@ export const useSubcategories = (): UseSubcategoriesInterface => {
                     queryKey: ['subcategories']
                 });
 
+                // Invalida também as categorias com subcategorias
+                queryClient.invalidateQueries({
+                    queryKey: ['categories', 'with-subcategories']
+                });
+
                 queryClient.setQueryData(
                     ['subcategory', updatedSubcategory.public_id],
                     updatedSubcategory
@@ -66,6 +76,10 @@ export const useSubcategories = (): UseSubcategoriesInterface => {
         await api.delete(`/subcategories/${id}`);
         queryClient.invalidateQueries({
             queryKey: ['subcategories']
+        });
+        // Invalida também as categorias com subcategorias
+        queryClient.invalidateQueries({
+            queryKey: ['categories', 'with-subcategories']
         });
     };
 

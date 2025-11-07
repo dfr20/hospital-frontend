@@ -4,6 +4,7 @@ import type { Category, CategoryPayload, CategoryResponse } from '../Types/Categ
 
 interface UseCategoriesInterface {
     fetchCategories: (page?: number, size?: number) => ReturnType<typeof useQuery<CategoryResponse>>;
+    fetchCategoriesWithSubcategories: (page?: number, size?: number) => ReturnType<typeof useQuery<CategoryResponse>>;
     createCategory: () => ReturnType<typeof useMutation<Category, Error, CategoryPayload>>;
     updateCategory: () => ReturnType<typeof useMutation<Category, Error, { id: string; data: CategoryPayload }>>;
     deleteCategory: (id: string) => Promise<void>;
@@ -19,6 +20,16 @@ export const useCategories = (): UseCategoriesInterface => {
             queryKey: ['categories', 'list', page, size],
             queryFn: async (): Promise<CategoryResponse> => {
                 const response = await api.get<CategoryResponse>(`/categories?page=${page}&size=${size}`);
+                return response.data;
+            },
+        });
+    };
+
+    const fetchCategoriesWithSubcategories = (page = 1, size = 10) => {
+        return useQuery({
+            queryKey: ['categories', 'with-subcategories', page, size],
+            queryFn: async (): Promise<CategoryResponse> => {
+                const response = await api.get<CategoryResponse>(`/categories/with-subcategories?page=${page}&size=${size}`);
                 return response.data;
             },
         });
@@ -81,6 +92,7 @@ export const useCategories = (): UseCategoriesInterface => {
 
     return {
         fetchCategories,
+        fetchCategoriesWithSubcategories,
         createCategory,
         updateCategory,
         deleteCategory,

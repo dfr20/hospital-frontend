@@ -1,7 +1,6 @@
 import type { FieldConfig } from '../../Components/Common/Modal/DynamicForm';
 
-// Configuração de campos para criar Licitação Pública
-export const publicAcquisitionFormFields: FieldConfig[] = [
+export const getPublicAcquisitionFormFields = (pregoeiros: Array<{ public_id: string; name: string }>): FieldConfig[] => [
   {
     name: 'code',
     label: 'Código da Licitação',
@@ -15,5 +14,23 @@ export const publicAcquisitionFormFields: FieldConfig[] = [
     type: 'text',
     placeholder: 'Digite o título da licitação',
     required: true
+  },
+  {
+    name: 'year',
+    label: 'Ano',
+    type: 'text',
+    placeholder: 'Ex: 2025',
+    required: true
+  },
+  {
+    name: 'user_id',
+    label: 'Pregoeiro',
+    type: 'select',
+    placeholder: 'Selecione o pregoeiro',
+    required: true,
+    options: pregoeiros.map(p => ({
+      value: p.public_id,
+      label: p.name
+    }))
   }
 ];

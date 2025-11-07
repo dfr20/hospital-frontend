@@ -9,9 +9,10 @@ import DynamicForm from "../../Components/Common/Modal/DynamicForm";
 import ConfirmationModal from "../../Components/Common/Modal/ConfirmationModal";
 import type { User, UserPayload } from "../../Types/User";
 import { useUsers } from "../../Hooks/useUsers";
-import { userFormFields } from "./UserFormConfigs";
+import { getUserFormFields } from "./UserFormConfigs";
 import { useToast } from "../../Contexts/ToastContext";
 import { getErrorMessage } from "../../Utils/errorHandler";
+import { useAuth } from "../../Contexts/AuthContext";
 
 // Tipo estendido para incluir 'id' necessário para o componente Table
 type UserWithId = User & { id: string };
@@ -39,6 +40,7 @@ const Users: React.FC = () => {
   } = useUsers();
 
   const toast = useToast();
+  const { user: currentUser } = useAuth();
 
   const { data: usersData, isLoading, error } = fetchUsers(currentPage, itemsPerPage);
   const { mutate: createUserMutation, isPending: isCreating } = createUser();
@@ -71,7 +73,8 @@ const Users: React.FC = () => {
   });
 
   // Atualizar campos do formulário com as opções dinâmicas
-  const formFieldsWithOptions = userFormFields.map(field => {
+  const userRole = currentUser?.role?.name;
+  const formFieldsWithOptions = getUserFormFields(userRole).map(field => {
     if (field.name === 'role_id') {
       return {
         ...field,
@@ -134,14 +137,14 @@ const Users: React.FC = () => {
         <div className="text-sm text-gray-500">{user.job_title.title}</div>
       )
     },
-    {
-      key: 'hospital',
+    ...(userRole === 'Desenvolvedor' ? [{
+      key: 'hospital' as const,
       header: 'Hospital',
       hideOnTablet: true,
-      render: (user) => (
+      render: (user: UserWithId) => (
         <div className="text-sm text-gray-500">{user.hospital.name}</div>
       )
-    }
+    }] : [])
   ];
 
   const handleView = (user: UserWithId) => {
@@ -204,10 +207,15 @@ const Users: React.FC = () => {
   };
 
   const handleSubmitUser = (data: UserPayload) => {
+    // Se não for desenvolvedor, usar o hospital_id do usuário logado
+    const payload = userRole !== 'Desenvolvedor' && currentUser?.hospital?.public_id
+      ? { ...data, hospital_id: currentUser.hospital.public_id }
+      : data;
+
     if (isEditMode && selectedUser) {
       // Modo de edição
       updateUserMutation(
-        { id: selectedUser.public_id, data },
+        { id: selectedUser.public_id, data: payload },
         {
           onSuccess: () => {
             toast.success('Usuário atualizado', `O usuário "${data.name}" foi atualizado com sucesso.`);
@@ -223,7 +231,7 @@ const Users: React.FC = () => {
       );
     } else {
       // Modo de criação
-      createUserMutation(data, {
+      createUserMutation(payload, {
         onSuccess: () => {
           toast.success('Usuário cadastrado', `O usuário "${data.name}" foi cadastrado com sucesso.`);
           setIsModalOpen(false);
@@ -338,7 +346,7 @@ const Users: React.FC = () => {
             password: '',
             role_id: selectedUser.role.public_id,
             job_title_id: selectedUser.job_title.public_id,
-            hospital_id: selectedUser.hospital.public_id
+            ...(userRole === 'Desenvolvedor' ? { hospital_id: selectedUser.hospital.public_id } : {})
           } : undefined}
           readOnly={isViewMode}
         />

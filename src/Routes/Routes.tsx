@@ -5,13 +5,13 @@ import Hospitals from '../Pages/Hospitals/Hospitals';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import JobTitles from '../Pages/JobTitles/JobTitles';
 import Catalogs from '../Pages/Catalog/Catalog';
-import Categories from '../Pages/Categories/Categories';
-import Subcategories from '../Pages/Subcategories/Subcategories';
+import CategoriesWithSubcategories from '../Pages/Categories/CategoriesWithSubcategories';
 import Items from '../Pages/Items/Items';
 import Suppliers from '../Pages/Suppliers/Suppliers';
 import ProtectedRoute from '../Components/Common/ProtectedRoute';
 import RedirectToAllowed from '../Components/Common/RedirectToAllowed';
 import PublicAcquisitions from '../Pages/PublicAcquisitions/PublicAcquisitions';
+import PublicAcquisitionDetails from '../Pages/PublicAcquisitions/PublicAcquisitionDetails';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -63,15 +63,7 @@ const AppRoutes: React.FC = () => {
           path="/categories"
           element={
             <ProtectedRoute requiredPage="/categories">
-              <Categories />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/subcategories"
-          element={
-            <ProtectedRoute requiredPage="/subcategories">
-              <Subcategories />
+              <CategoriesWithSubcategories />
             </ProtectedRoute>
           }
         />
@@ -96,6 +88,14 @@ const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoute requiredPage="/public-acquisitions">
               <PublicAcquisitions />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/public-acquisitions/:id"
+          element={
+            <ProtectedRoute requiredPage="/public-acquisitions">
+              <PublicAcquisitionDetails />
             </ProtectedRoute>
           }
         />

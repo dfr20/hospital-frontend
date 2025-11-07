@@ -11,7 +11,27 @@ const Header: React.FC = () => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   // Pega o header correto baseado na rota atual
-  const data = headerConfigs[location.pathname] || headerConfigs['/users'];
+  // Primeiro tenta match exato, depois tenta match parcial (para rotas dinâmicas)
+  const getHeaderData = () => {
+    // Match exato
+    if (headerConfigs[location.pathname]) {
+      return headerConfigs[location.pathname];
+    }
+    
+    // Match parcial - verifica se a rota começa com alguma das rotas configuradas
+    const matchingRoute = Object.keys(headerConfigs).find(route => 
+      location.pathname.startsWith(route) && route !== '/'
+    );
+    
+    if (matchingRoute) {
+      return headerConfigs[matchingRoute];
+    }
+    
+    // Fallback
+    return headerConfigs['/users'];
+  };
+
+  const data = getHeaderData();
 
   const handleAction = (actionId: string) => {
     if (actionId === 'logout') {

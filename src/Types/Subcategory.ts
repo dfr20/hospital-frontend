@@ -10,7 +10,7 @@ export interface Subcategory {
 export interface SubcategoryPayload {
   name: string;
   description: string;
-  category_id: string;  // Backend espera category_id no POST/PUT
+  category_id: string;
 }
 
 export interface SubcategoryResponse {

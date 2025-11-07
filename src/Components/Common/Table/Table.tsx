@@ -15,6 +15,7 @@ interface TableProps<T> {
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
   onView?: (item: T) => void;
+  onRowClick?: (item: T) => void;
   showActions?: boolean;
   emptyMessage?: string;
 }
@@ -25,6 +26,7 @@ export function Table<T extends { id: number | string }>({
   onEdit,
   onDelete,
   onView,
+  onRowClick,
   showActions = true,
   emptyMessage = 'Nenhum registro encontrado'
 }: TableProps<T>) {
@@ -68,7 +70,11 @@ export function Table<T extends { id: number | string }>({
               </tr>
             ) : (
               data.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                <tr 
+                  key={item.id} 
+                  className={`hover:bg-gray-50 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
+                  onClick={() => onRowClick && onRowClick(item)}
+                >
                   {columns.map((column) => (
                     <td
                       key={column.key}
@@ -81,7 +87,7 @@ export function Table<T extends { id: number | string }>({
                   ))}
                   {showActions && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-3 justify-center">
+                      <div className="flex gap-3 justify-center" onClick={(e) => e.stopPropagation()}>
                         {onView && (
                           <button
                             onClick={() => onView(item)}

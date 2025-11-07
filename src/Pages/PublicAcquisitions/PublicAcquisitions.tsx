@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Layout } from "../../Components/Common/Layout/Layout";
 import { Filter, Plus } from "lucide-react";
 import Table from "../../Components/Common/Table/Table";
@@ -9,9 +10,10 @@ import DynamicForm from "../../Components/Common/Modal/DynamicForm";
 import ConfirmationModal from "../../Components/Common/Modal/ConfirmationModal";
 import type { PublicAcquisition, PublicAcquisitionPayload } from "../../Types/PublicAcquisition";
 import { usePublicAcquisitions } from "../../Hooks/usePublicAcquisitions";
-import { publicAcquisitionFormFields } from "./PublicAcquisitionFormConfigs";
+import { getPublicAcquisitionFormFields } from "./PublicAcquisitionFormConfigs";
 import { useToast } from "../../Contexts/ToastContext";
 import { getErrorMessage } from "../../Utils/errorHandler";
+import { useUsers } from "../../Hooks/useUsers";
 
 // Tipo estendido para incluir 'id' necessário para o componente Table
 type PublicAcquisitionWithId = PublicAcquisition & { id: string };
@@ -29,11 +31,22 @@ const PublicAcquisitions: React.FC = () => {
   const itemsPerPage = 10;
 
   const toast = useToast();
+  const navigate = useNavigate();
   const { fetchPublicAcquisitions, createPublicAcquisition, updatePublicAcquisition, deletePublicAcquisition } = usePublicAcquisitions();
+  const { fetchPregoeiros } = useUsers();
 
   const { data: publicAcquisitionsData, isLoading, error } = fetchPublicAcquisitions(currentPage, itemsPerPage);
+  const { data: pregoeirosData, isLoading: isLoadingPregoeiros, error: pregoeirosError } = fetchPregoeiros(1, 25);
   const { mutate: createPublicAcquisitionMutation, isPending: isCreating } = createPublicAcquisition();
   const { mutate: updatePublicAcquisitionMutation, isPending: isUpdating } = updatePublicAcquisition();
+
+  // Log de erro dos pregoeiros
+  React.useEffect(() => {
+    if (pregoeirosError) {
+      console.error('Erro ao carregar pregoeiros:', pregoeirosError);
+      toast.error('Erro ao carregar pregoeiros', 'Não foi possível carregar a lista de pregoeiros. Verifique o console.');
+    }
+  }, [pregoeirosError, toast]);
 
   // Adaptar dados para incluir 'id' baseado em 'public_id'
   const publicAcquisitionsWithId: PublicAcquisitionWithId[] = (publicAcquisitionsData?.items || []).map((publicAcquisition: PublicAcquisition) => ({
@@ -67,6 +80,22 @@ const PublicAcquisitions: React.FC = () => {
       hideOnMobile: true,
       render: (publicAcquisition) => (
         <div className="text-sm text-gray-500">{publicAcquisition.title}</div>
+      )
+    },
+    {
+      key: 'year',
+      header: 'Ano',
+      hideOnMobile: true,
+      render: (publicAcquisition) => (
+        <div className="text-sm text-gray-500">{publicAcquisition.year}</div>
+      )
+    },
+    {
+      key: 'user',
+      header: 'Pregoeiro',
+      hideOnTablet: true,
+      render: (publicAcquisition) => (
+        <div className="text-sm text-gray-500">{publicAcquisition.user?.name || 'N/A'}</div>
       )
     },
     {
@@ -140,11 +169,19 @@ const PublicAcquisitions: React.FC = () => {
     setIsEditMode(false);
   };
 
-  const handleSubmitPublicAcquisition = (data: PublicAcquisitionPayload) => {
+  const handleSubmitPublicAcquisition = (data: Record<string, string>) => {
+    // Converter year para número
+    const payload: PublicAcquisitionPayload = {
+      code: data.code,
+      title: data.title,
+      year: parseInt(data.year, 10),
+      user_id: data.user_id
+    };
+
     if (isEditMode && selectedPublicAcquisition) {
       // Modo de edição
       updatePublicAcquisitionMutation(
-        { id: selectedPublicAcquisition.public_id, data },
+        { id: selectedPublicAcquisition.public_id, data: payload },
         {
           onSuccess: () => {
             toast.success('Licitação atualizada', 'Licitação atualizada com sucesso!');
@@ -160,7 +197,7 @@ const PublicAcquisitions: React.FC = () => {
       );
     } else {
       // Modo de criação
-      createPublicAcquisitionMutation(data, {
+      createPublicAcquisitionMutation(payload, {
         onSuccess: () => {
           toast.success('Licitação criada', 'Licitação criada com sucesso!');
           setIsModalOpen(false);
@@ -234,6 +271,7 @@ const PublicAcquisitions: React.FC = () => {
                 onView={handleView}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onRowClick={(publicAcquisition) => navigate(`/public-acquisitions/${publicAcquisition.public_id}`)}
                 emptyMessage={searchTerm ? "Nenhuma licitação encontrada com esse termo" : "Nenhuma licitação encontrada"}
               />
               {!searchTerm && (
@@ -261,19 +299,27 @@ const PublicAcquisitions: React.FC = () => {
             : "Criar Nova Licitação"
         }
       >
-        <DynamicForm<PublicAcquisitionPayload>
-          fields={publicAcquisitionFormFields}
-          onSubmit={handleSubmitPublicAcquisition}
-          onCancel={handleCloseModal}
-          isLoading={isCreating || isUpdating}
-          submitLabel={isEditMode ? "Salvar Alterações" : "Criar Licitação"}
-          cancelLabel="Cancelar"
-          initialValues={selectedPublicAcquisition ? {
-            code: selectedPublicAcquisition.code,
-            title: selectedPublicAcquisition.title
-          } : undefined}
-          readOnly={isViewMode}
-        />
+        {isLoadingPregoeiros ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-gray-500">Carregando pregoeiros...</div>
+          </div>
+        ) : (
+          <DynamicForm<Record<string, string>>
+            fields={getPublicAcquisitionFormFields(pregoeirosData?.items || [])}
+            onSubmit={handleSubmitPublicAcquisition}
+            onCancel={handleCloseModal}
+            isLoading={isCreating || isUpdating}
+            submitLabel={isEditMode ? "Salvar Alterações" : "Criar Licitação"}
+            cancelLabel="Cancelar"
+            initialValues={selectedPublicAcquisition ? {
+              code: selectedPublicAcquisition.code,
+              title: selectedPublicAcquisition.title,
+              year: selectedPublicAcquisition.year.toString(),
+              user_id: selectedPublicAcquisition.user_public_id
+            } : undefined}
+            readOnly={isViewMode}
+          />
+        )}
       </Modal>
 
       {/* Modal de Confirmação de Exclusão */}
