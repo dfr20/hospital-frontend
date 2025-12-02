@@ -14,6 +14,7 @@ interface useUsersHook {
     fetchUsers: (page?: number, size?: number, enabled?: boolean) => ReturnType<typeof useQuery<UserResponse>>;
     fetchPregoeiros: (page?: number, size?: number) => ReturnType<typeof useQuery<UserResponse>>;
     fetchUserById: (id: string) => ReturnType<typeof useQuery<User>>;
+    searchUsers: (searchTerm: string) => ReturnType<typeof useQuery<UserResponse>>;
     fetchNationalities: () => ReturnType<typeof useQuery<Nationality[]>>;
     fetchRoles: () => ReturnType<typeof useQuery<Role[]>>;
     fetchJobTitles: () => ReturnType<typeof useQuery<JobTitle[]>>;
@@ -64,6 +65,17 @@ export const useUsers = (): useUsersHook => {
                 return response.data;
             },
             enabled: !!id
+        });
+    };
+
+    const searchUsers = (searchTerm: string): ReturnType<typeof useQuery<UserResponse>> => {
+        return useQuery({
+            queryKey: ['users', 'search', searchTerm],
+            queryFn: async (): Promise<UserResponse> => {
+                const response = await api.get<UserResponse>(`/users/search/${searchTerm}`);
+                return response.data;
+            },
+            enabled: searchTerm.length > 0
         });
     };
 
@@ -168,6 +180,7 @@ export const useUsers = (): useUsersHook => {
         fetchUsers,
         fetchPregoeiros,
         fetchUserById,
+        searchUsers,
         fetchNationalities,
         fetchRoles,
         fetchJobTitles,

@@ -5,15 +5,12 @@ import { Filter, Plus } from "lucide-react";
 import Table from "../../Components/Common/Table/Table";
 import type { Column } from "../../Components/Common/Table/Table";
 import Pagination from "../../Components/Common/Table/Pagination";
-import Modal from "../../Components/Common/Modal/Modal";
-import DynamicForm from "../../Components/Common/Modal/DynamicForm";
+import PublicAcquisitionModal from "../../Components/Common/Modal/PublicAcquisitionModal";
 import ConfirmationModal from "../../Components/Common/Modal/ConfirmationModal";
 import type { PublicAcquisition, PublicAcquisitionPayload } from "../../Types/PublicAcquisition";
 import { usePublicAcquisitions } from "../../Hooks/usePublicAcquisitions";
-import { getPublicAcquisitionFormFields } from "./PublicAcquisitionFormConfigs";
 import { useToast } from "../../Contexts/ToastContext";
 import { getErrorMessage } from "../../Utils/errorHandler";
-import { useUsers } from "../../Hooks/useUsers";
 
 // Tipo estendido para incluir 'id' necessário para o componente Table
 type PublicAcquisitionWithId = PublicAcquisition & { id: string };
@@ -33,20 +30,10 @@ const PublicAcquisitions: React.FC = () => {
   const toast = useToast();
   const navigate = useNavigate();
   const { fetchPublicAcquisitions, createPublicAcquisition, updatePublicAcquisition, deletePublicAcquisition } = usePublicAcquisitions();
-  const { fetchPregoeiros } = useUsers();
 
   const { data: publicAcquisitionsData, isLoading, error } = fetchPublicAcquisitions(currentPage, itemsPerPage);
-  const { data: pregoeirosData, isLoading: isLoadingPregoeiros, error: pregoeirosError } = fetchPregoeiros(1, 25);
   const { mutate: createPublicAcquisitionMutation, isPending: isCreating } = createPublicAcquisition();
   const { mutate: updatePublicAcquisitionMutation, isPending: isUpdating } = updatePublicAcquisition();
-
-  // Log de erro dos pregoeiros
-  React.useEffect(() => {
-    if (pregoeirosError) {
-      console.error('Erro ao carregar pregoeiros:', pregoeirosError);
-      toast.error('Erro ao carregar pregoeiros', 'Não foi possível carregar a lista de pregoeiros. Verifique o console.');
-    }
-  }, [pregoeirosError, toast]);
 
   // Adaptar dados para incluir 'id' baseado em 'public_id'
   const publicAcquisitionsWithId: PublicAcquisitionWithId[] = (publicAcquisitionsData?.items || []).map((publicAcquisition: PublicAcquisition) => ({
@@ -169,13 +156,19 @@ const PublicAcquisitions: React.FC = () => {
     setIsEditMode(false);
   };
 
-  const handleSubmitPublicAcquisition = (data: Record<string, string>) => {
-    // Converter year para número
+  const handleSubmitPublicAcquisition = (data: {
+    code: string;
+    title: string;
+    year: number;
+    user_id: string;
+    item_ids: string[];
+  }) => {
     const payload: PublicAcquisitionPayload = {
       code: data.code,
       title: data.title,
-      year: parseInt(data.year, 10),
-      user_id: data.user_id
+      year: data.year,
+      user_id: data.user_id,
+      item_ids: data.item_ids
     };
 
     if (isEditMode && selectedPublicAcquisition) {
@@ -288,39 +281,20 @@ const PublicAcquisitions: React.FC = () => {
       </div>
 
       {/* Modal de Criação/Visualização/Edição */}
-      <Modal
+      <PublicAcquisitionModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={
-          isViewMode
-            ? "Detalhes da Licitação"
-            : isEditMode
-            ? "Editar Licitação"
-            : "Criar Nova Licitação"
-        }
-      >
-        {isLoadingPregoeiros ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="text-gray-500">Carregando pregoeiros...</div>
-          </div>
-        ) : (
-          <DynamicForm<Record<string, string>>
-            fields={getPublicAcquisitionFormFields(pregoeirosData?.items || [])}
-            onSubmit={handleSubmitPublicAcquisition}
-            onCancel={handleCloseModal}
-            isLoading={isCreating || isUpdating}
-            submitLabel={isEditMode ? "Salvar Alterações" : "Criar Licitação"}
-            cancelLabel="Cancelar"
-            initialValues={selectedPublicAcquisition ? {
-              code: selectedPublicAcquisition.code,
-              title: selectedPublicAcquisition.title,
-              year: selectedPublicAcquisition.year.toString(),
-              user_id: selectedPublicAcquisition.user_public_id
-            } : undefined}
-            readOnly={isViewMode}
-          />
-        )}
-      </Modal>
+        onSubmit={handleSubmitPublicAcquisition}
+        mode={isViewMode ? 'view' : isEditMode ? 'edit' : 'create'}
+        initialData={selectedPublicAcquisition ? {
+          code: selectedPublicAcquisition.code,
+          title: selectedPublicAcquisition.title,
+          year: selectedPublicAcquisition.year,
+          user_id: selectedPublicAcquisition.user_public_id,
+          items: selectedPublicAcquisition.items
+        } : undefined}
+        isLoading={isCreating || isUpdating}
+      />
 
       {/* Modal de Confirmação de Exclusão */}
       <ConfirmationModal

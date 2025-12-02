@@ -4,6 +4,7 @@ import type { PublicAcquisition, PublicAcquisitionPayload, PublicAcquisitionResp
 
 interface UsePublicAcquisitionsInterface {
     fetchPublicAcquisitions: (page?: number, size?: number) => ReturnType<typeof useQuery<PublicAcquisitionResponse>>;
+    fetchPublicAcquisitionById: (id: string) => ReturnType<typeof useQuery<PublicAcquisition>>;
     createPublicAcquisition: () => ReturnType<typeof useMutation<PublicAcquisition, Error, PublicAcquisitionPayload>>;
     updatePublicAcquisition: () => ReturnType<typeof useMutation<PublicAcquisition, Error, { id: string; data: PublicAcquisitionPayload }>>;
     deletePublicAcquisition: (id: string) => Promise<void>;
@@ -24,6 +25,17 @@ export const usePublicAcquisitions = (): UsePublicAcquisitionsInterface => {
         });
     };
 
+    const fetchPublicAcquisitionById = (id: string) => {
+        return useQuery({
+            queryKey: ['publicAcquisition', id],
+            queryFn: async (): Promise<PublicAcquisition> => {
+                const response = await api.get<PublicAcquisition>(`/public-acquisitions/${id}`);
+                return response.data;
+            },
+            enabled: !!id,
+        });
+    };
+
     const createPublicAcquisition = () => {
         return useMutation({
             mutationFn: async (data: PublicAcquisitionPayload): Promise<PublicAcquisition> => {
@@ -35,10 +47,10 @@ export const usePublicAcquisitions = (): UsePublicAcquisitionsInterface => {
                     queryKey: ['publicAcquisitions']
                 });
 
-                queryClient.setQueryData(
-                    ['publicAcquisition', newPublicAcquisition.public_id],
-                    newPublicAcquisition
-                );
+                // Invalidar também a query específica para forçar reload com dados completos
+                queryClient.invalidateQueries({
+                    queryKey: ['publicAcquisition', newPublicAcquisition.public_id]
+                });
             },
         });
     };
@@ -54,10 +66,10 @@ export const usePublicAcquisitions = (): UsePublicAcquisitionsInterface => {
                     queryKey: ['publicAcquisitions']
                 });
 
-                queryClient.setQueryData(
-                    ['publicAcquisition', updatedPublicAcquisition.public_id],
-                    updatedPublicAcquisition
-                );
+                // Invalidar também a query específica para forçar reload com dados completos
+                queryClient.invalidateQueries({
+                    queryKey: ['publicAcquisition', updatedPublicAcquisition.public_id]
+                });
             },
         });
     };
@@ -81,6 +93,7 @@ export const usePublicAcquisitions = (): UsePublicAcquisitionsInterface => {
 
     return {
         fetchPublicAcquisitions,
+        fetchPublicAcquisitionById,
         createPublicAcquisition,
         updatePublicAcquisition,
         deletePublicAcquisition,

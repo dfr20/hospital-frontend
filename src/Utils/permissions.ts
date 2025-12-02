@@ -2,7 +2,9 @@ export const RoleName = {
   DESENVOLVEDOR: 'Desenvolvedor',
   GERENTE: 'Gerente',
   ADMINISTRADOR: 'Administrador',
-  PREGOEIRO: 'Pregoeiro'
+  PREGOEIRO: 'Pregoeiro',
+  AVALIADOR_TECNICO: 'Avaliador Técnico',
+  AVALIADOR_FUNCIONAL: 'Avaliador Funcional'
 } as const;
 
 export type RoleNameType = typeof RoleName[keyof typeof RoleName];
@@ -19,15 +21,15 @@ export const permissions: Permission[] = [
   },
   {
     page: '/items',
-    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE]
+    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE, RoleName.PREGOEIRO]
   },
   {
     page: '/categories',
-    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE]
+    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE, RoleName.PREGOEIRO]
   },
   {
     page: '/subcategories',
-    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE]
+    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE, RoleName.PREGOEIRO]
   },
   {
     page: '/hospitals',
@@ -35,11 +37,11 @@ export const permissions: Permission[] = [
   },
   {
     page: '/catalog',
-    roles: [RoleName.DESENVOLVEDOR]
+    roles: [RoleName.DESENVOLVEDOR, RoleName.PREGOEIRO]
   },
   {
     page: '/suppliers',
-    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE]
+    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE, RoleName.PREGOEIRO]
   },
   {
     page: '/job-titles',
@@ -47,10 +49,14 @@ export const permissions: Permission[] = [
   },
   {
     page: '/dashboard',
-    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO]
+    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
   },
   {
     page: '/public-acquisitions',
+    roles: [RoleName.DESENVOLVEDOR, RoleName.ADMINISTRADOR, RoleName.GERENTE, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
+  },
+  {
+    page: '/questions',
     roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE]
   }
 ];

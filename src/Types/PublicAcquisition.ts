@@ -1,5 +1,6 @@
 import type { Hospital } from "./Hospital";
 import type { User } from "./User";
+import type { Item } from "./Item";
 
 export interface PublicAcquisition {
   public_id: string;
@@ -8,6 +9,7 @@ export interface PublicAcquisition {
   year: number;
   hospital_public_id: string;
   user_public_id: string;
+  items: Item[];
   created_at: string;
   updated_at: string;
   hospital: Hospital;
@@ -19,6 +21,7 @@ export interface PublicAcquisitionPayload {
   title: string;
   year: number;
   user_id: string;
+  item_ids: string[];
 }
 
 export interface PublicAcquisitionResponse {

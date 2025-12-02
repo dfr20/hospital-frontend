@@ -1,4 +1,4 @@
-import { Building2, Home, Users, Package, FolderTree, Briefcase, ShoppingCart, BookOpen, Truck } from 'lucide-react';
+import { Building2, Home, Users, Package, FolderTree, Briefcase, ShoppingCart, BookOpen, Truck, HelpCircle } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export interface MenuItem {
@@ -31,6 +31,7 @@ export const sidebarData: SidebarDataType = {
     { id: 'categories', label: 'Categorias', icon: FolderTree, route: '/categories' },
     { id: 'cargos', label: 'Cargos', icon: Briefcase, route: '/job-titles' },
     { id: 'public-acquisitions', label: 'Licitações Públicas', icon: ShoppingCart, route: '/public-acquisitions' },
+    { id: 'questions', label: 'Questões', icon: HelpCircle, route: '/questions' },
   ]
 };
 
@@ -44,5 +45,6 @@ export const routeToPageId: Record<string, string> = {
   '/items': 'items',
   '/categories': 'categories',
   '/job-titles': 'cargos',
-  '/public-acquisitions': 'public-acquisitions'
+  '/public-acquisitions': 'public-acquisitions',
+  '/questions': 'questions'
 };

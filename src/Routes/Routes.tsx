@@ -6,12 +6,13 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import JobTitles from '../Pages/JobTitles/JobTitles';
 import Catalogs from '../Pages/Catalog/Catalog';
 import CategoriesWithSubcategories from '../Pages/Categories/CategoriesWithSubcategories';
-import Items from '../Pages/Items/Items';
+import ItemsWithEvaluations from '../Pages/Items/ItemsWithEvaluations';
 import Suppliers from '../Pages/Suppliers/Suppliers';
 import ProtectedRoute from '../Components/Common/ProtectedRoute';
 import RedirectToAllowed from '../Components/Common/RedirectToAllowed';
 import PublicAcquisitions from '../Pages/PublicAcquisitions/PublicAcquisitions';
 import PublicAcquisitionDetails from '../Pages/PublicAcquisitions/PublicAcquisitionDetails';
+import Questions from '../Pages/Questions/Questions';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -71,7 +72,7 @@ const AppRoutes: React.FC = () => {
           path="/items"
           element={
             <ProtectedRoute requiredPage="/items">
-              <Items />
+              <ItemsWithEvaluations />
             </ProtectedRoute>
           }
         />
@@ -96,6 +97,14 @@ const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoute requiredPage="/public-acquisitions">
               <PublicAcquisitionDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/questions"
+          element={
+            <ProtectedRoute requiredPage="/questions">
+              <Questions />
             </ProtectedRoute>
           }
         />

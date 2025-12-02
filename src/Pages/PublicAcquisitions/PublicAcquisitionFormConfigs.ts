@@ -1,6 +1,9 @@
 import type { FieldConfig } from '../../Components/Common/Modal/DynamicForm';
 
-export const getPublicAcquisitionFormFields = (pregoeiros: Array<{ public_id: string; name: string }>): FieldConfig[] => [
+export const getPublicAcquisitionFormFields = (
+  pregoeiros: Array<{ public_id: string; name: string }>,
+  items: Array<{ public_id: string; name: string }>
+): FieldConfig[] => [
   {
     name: 'code',
     label: 'Código da Licitação',
@@ -31,6 +34,17 @@ export const getPublicAcquisitionFormFields = (pregoeiros: Array<{ public_id: st
     options: pregoeiros.map(p => ({
       value: p.public_id,
       label: p.name
+    }))
+  },
+  {
+    name: 'item_ids',
+    label: 'Itens da Licitação',
+    type: 'multi-select',
+    placeholder: 'Selecione os itens',
+    required: true,
+    options: items.map(item => ({
+      value: item.public_id,
+      label: item.name
     }))
   }
 ];
