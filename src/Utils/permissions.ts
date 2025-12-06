@@ -57,7 +57,7 @@ export const permissions: Permission[] = [
   },
   {
     page: '/questions',
-    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE]
+    roles: [RoleName.DESENVOLVEDOR, RoleName.ADMINISTRADOR, RoleName.GERENTE, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
   }
 ];
 

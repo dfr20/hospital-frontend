@@ -13,6 +13,7 @@ interface UseEvaluationsInterface {
     fetchEvaluationsBySupplier: (supplierId: string, page?: number, size?: number) => ReturnType<typeof useQuery<EvaluationResponse>>;
     fetchEvaluationsByUser: (userId: string, page?: number, size?: number) => ReturnType<typeof useQuery<EvaluationResponse>>;
     fetchEvaluationsByItem: (itemId: string, page?: number, size?: number) => ReturnType<typeof useQuery<EvaluationResponse>>;
+    fetchEvaluationById: (id: string) => ReturnType<typeof useQuery<Evaluation>>;
     getEvaluationById: (id: string) => Promise<Evaluation>;
     createEvaluation: () => ReturnType<typeof useMutation<Evaluation, Error, EvaluationPayload>>;
     updateEvaluation: () => ReturnType<typeof useMutation<Evaluation, Error, { id: string; data: EvaluationUpdatePayload }>>;
@@ -69,6 +70,17 @@ export const useEvaluations = (): UseEvaluationsInterface => {
                 return response.data;
             },
             enabled: !!itemId,
+        });
+    };
+
+    const fetchEvaluationById = (id: string) => {
+        return useQuery({
+            queryKey: ['evaluation', id],
+            queryFn: async (): Promise<Evaluation> => {
+                const response = await api.get<Evaluation>(`/evaluations/${id}`);
+                return response.data;
+            },
+            enabled: !!id,
         });
     };
 
@@ -146,6 +158,7 @@ export const useEvaluations = (): UseEvaluationsInterface => {
         fetchEvaluationsBySupplier,
         fetchEvaluationsByUser,
         fetchEvaluationsByItem,
+        fetchEvaluationById,
         getEvaluationById,
         createEvaluation,
         updateEvaluation,

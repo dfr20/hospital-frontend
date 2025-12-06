@@ -176,6 +176,7 @@ const Questions: React.FC = () => {
     roles: string[];
     condition: string | null;
     options: string[] | null;
+    category_id: string | null;
     hospital_id?: string;
   }) => {
     // Adicionar hospital_id do usuário logado
@@ -299,6 +300,8 @@ const Questions: React.FC = () => {
           roles: selectedQuestion.roles,
           condition: selectedQuestion.condition,
           options: selectedQuestion.options,
+          category_id: selectedQuestion.category_id,
+          category_name: selectedQuestion.category?.name,
           hospital_id: selectedQuestion.hospital_id
         } : undefined}
         isLoading={isCreating || isUpdating}

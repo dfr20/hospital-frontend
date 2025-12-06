@@ -1,89 +1,70 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '../../Components/Common/Layout/Layout';
-import { Home, Activity, Users, Package } from 'lucide-react';
+import { sidebarData } from '../../Components/Common/Sidebar/SidebarData';
+import { useAuth } from '../../Contexts/AuthContext';
+import { hasPermission } from '../../Utils/permissions';
+
+// Mapeamento de descrições para cada rota
+const routeDescriptions: Record<string, string> = {
+  '/users': 'Gerencie usuários do sistema',
+  '/hospitals': 'Gerencie hospitais cadastrados',
+  '/suppliers': 'Gerencie fornecedores',
+  '/catalog': 'Gerencie catálogo de produtos',
+  '/items': 'Gerencie itens e avaliações',
+  '/categories': 'Gerencie categorias e subcategorias',
+  '/job-titles': 'Gerencie cargos e funções',
+  '/public-acquisitions': 'Gerencie licitações públicas',
+  '/questions': 'Gerencie questões do sistema'
+};
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Filtra os itens do menu (excluindo o próprio Dashboard) baseado nas permissões do usuário
+  const visibleCards = sidebarData.menuItems
+    .filter(item => item.route !== '/dashboard') // Remove o dashboard da lista
+    .filter(item => user?.role?.name ? hasPermission(user.role.name, item.route) : false);
+
+  const handleCardClick = (route: string) => {
+    navigate(route);
+  };
+
   return (
     <Layout>
-      <div className="p-6">
-        {/* Header da Dashboard */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Bem-vindo ao sistema de gestão hospitalar</p>
-        </div>
+      <div className="min-h-screen bg-white p-8">
+        {/* Grid de Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {visibleCards.map((item, index) => {
+            const Icon = item.icon;
+            const description = routeDescriptions[item.route] || 'Acesse esta seção';
 
-        {/* Cards de Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          {/* Card 1 */}
-          <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Total de Usuários</p>
-                <p className="text-2xl font-bold text-gray-800 mt-2">-</p>
-              </div>
-              <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-teal-600" />
-              </div>
-            </div>
-          </div>
+            return (
+              <button
+                key={index}
+                onClick={() => handleCardClick(item.route)}
+                className="cursor-pointer group relative bg-white border border-gray-200 rounded-lg p-8 shadow hover:shadow-lg transition-all duration-300 hover:border-teal-500"
+              >
+                <div className="flex flex-col items-center text-center gap-4">
+                  {/* Ícone */}
+                  <div className="text-teal-600">
+                    <Icon className="w-8 h-8" />
+                  </div>
 
-          {/* Card 2 */}
-          <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Hospitais</p>
-                <p className="text-2xl font-bold text-gray-800 mt-2">-</p>
-              </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Home className="w-6 h-6 text-blue-600" />
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3 */}
-          <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Itens no Catálogo</p>
-                <p className="text-2xl font-bold text-gray-800 mt-2">-</p>
-              </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Package className="w-6 h-6 text-purple-600" />
-              </div>
-            </div>
-          </div>
-
-          {/* Card 4 */}
-          <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Atividade</p>
-                <p className="text-2xl font-bold text-gray-800 mt-2">-</p>
-              </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <Activity className="w-6 h-6 text-green-600" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Conteúdo Principal */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Atividades Recentes */}
-          <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Atividades Recentes</h2>
-            <div className="space-y-4">
-              <p className="text-gray-500 text-center py-8">Nenhuma atividade recente</p>
-            </div>
-          </div>
-
-          {/* Informações Rápidas */}
-          <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Informações Rápidas</h2>
-            <div className="space-y-4">
-              <p className="text-gray-500 text-center py-8">Dados em desenvolvimento</p>
-            </div>
-          </div>
+                  {/* Texto */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {item.label}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {description}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </Layout>

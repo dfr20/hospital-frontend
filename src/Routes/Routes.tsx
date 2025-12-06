@@ -9,19 +9,29 @@ import CategoriesWithSubcategories from '../Pages/Categories/CategoriesWithSubca
 import ItemsWithEvaluations from '../Pages/Items/ItemsWithEvaluations';
 import Suppliers from '../Pages/Suppliers/Suppliers';
 import ProtectedRoute from '../Components/Common/ProtectedRoute';
-import RedirectToAllowed from '../Components/Common/RedirectToAllowed';
 import PublicAcquisitions from '../Pages/PublicAcquisitions/PublicAcquisitions';
 import PublicAcquisitionDetails from '../Pages/PublicAcquisitions/PublicAcquisitionDetails';
 import Questions from '../Pages/Questions/Questions';
+import Dashboard from '../Pages/Dashboard/Dashboard';
+import RedirectToAllowed from '../Components/Common/RedirectToAllowed';
+import EvaluationQuestionnaire from '../Pages/Evaluations/EvaluationQuestionnaire';
 
 const AppRoutes: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Auth />} />
+        <Route path="/home" element={<RedirectToAllowed />} />
 
-        {/* Rota padrão após login - redireciona para primeira página permitida */}
-        <Route path="/dashboard" element={<RedirectToAllowed />} />
+        {/* Dashboard como página inicial */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute requiredPage="/dashboard">
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Rota para Gerente - Cadastro de usuários */}
         <Route
@@ -105,6 +115,14 @@ const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoute requiredPage="/questions">
               <Questions />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/evaluations/:id/questionnaire"
+          element={
+            <ProtectedRoute requiredPage="/public-acquisitions">
+              <EvaluationQuestionnaire />
             </ProtectedRoute>
           }
         />

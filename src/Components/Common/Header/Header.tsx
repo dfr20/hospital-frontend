@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { LogOut, User as UserIcon } from 'lucide-react';
 import { headerConfigs } from './HeaderData';
 import { useAuth } from '../../../Contexts/AuthContext';
 import ConfirmationModal from '../Modal/ConfirmationModal';
@@ -7,7 +8,7 @@ import ConfirmationModal from '../Modal/ConfirmationModal';
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   // Pega o header correto baseado na rota atual
@@ -33,13 +34,8 @@ const Header: React.FC = () => {
 
   const data = getHeaderData();
 
-  const handleAction = (actionId: string) => {
-    if (actionId === 'logout') {
-      setIsLogoutModalOpen(true);
-    } else {
-      console.log('Header action:', actionId);
-      // Adicione sua lógica aqui (ex: abrir modal de settings, etc)
-    }
+  const handleLogout = () => {
+    setIsLogoutModalOpen(true);
   };
 
   const handleConfirmLogout = () => {
@@ -62,37 +58,28 @@ const Header: React.FC = () => {
             </div>
             <h2 className="text-xl font-semibold text-gray-800">{data.title}</h2>
           </div>
-          <div className="flex items-center gap-4">
-            {data.actions.map((action) => {
-              const Icon = action.icon;
-
-              if (action.type === 'icon') {
-                return (
-                  <button
-                    key={action.id}
-                    onClick={() => handleAction(action.id)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <Icon className="w-5 h-5 text-gray-600" />
-                  </button>
-                );
-              }
-
-              if (action.type === 'button') {
-                return (
-                  <button
-                    key={action.id}
-                    onClick={() => handleAction(action.id)}
-                    className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
-                  >
-                    <Icon className="w-4 h-4" />
-                    {action.label}
-                  </button>
-                );
-              }
-
-              return null;
-            })}
+          <div className="flex items-center gap-3">
+            {/* Informações do usuário */}
+            {user && (
+              <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200">
+                <div className="p-2 bg-gradient-to-br from-teal-50 to-teal-100 rounded-full">
+                  <UserIcon className="w-5 h-5 text-teal-600" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-gray-800">{user.email}</span>
+                  <span className="text-xs text-gray-500">{user.job_title.title}</span>
+                </div>
+              </div>
+            )}
+            
+            {/* Botão de Logout */}
+            <button
+              onClick={handleLogout}
+              className="p-2.5 hover:bg-red-50 rounded-lg transition-colors group"
+              title="Sair"
+            >
+              <LogOut className="w-5 h-5 text-gray-600 group-hover:text-red-600 transition-colors" />
+            </button>
           </div>
         </div>
       </header>

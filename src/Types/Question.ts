@@ -7,6 +7,11 @@ export interface Question {
   roles: string[];
   condition: string | null;
   options: string[] | null;
+  category_id: string | null;
+  category?: {
+    public_id: string;
+    name: string;
+  };
   hospital_id: string;
   created_at: string;
   updated_at: string;
@@ -20,6 +25,7 @@ export interface QuestionPayload {
   roles: string[];
   condition?: string | null;
   options?: string[] | null;
+  category_id?: string | null;
   hospital_id: string;
 }
 
@@ -31,6 +37,7 @@ export interface QuestionUpdatePayload {
   roles?: string[];
   condition?: string | null;
   options?: string[] | null;
+  category_id?: string | null;
 }
 
 export interface QuestionResponse {

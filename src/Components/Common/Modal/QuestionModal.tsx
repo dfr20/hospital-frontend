@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { X } from 'lucide-react';
+import { useCategories } from '../../../Hooks/useCategories';
+import type { Category } from '../../../Types/Category';
 
 interface QuestionModalProps {
     isOpen: boolean;
@@ -13,6 +15,7 @@ interface QuestionModalProps {
         roles: string[];
         condition: string | null;
         options: string[] | null;
+        category_id: string | null;
         hospital_id?: string;
     }) => void;
     mode: 'create' | 'edit' | 'view';
@@ -24,6 +27,8 @@ interface QuestionModalProps {
         roles?: string[];
         condition?: string | null;
         options?: string[] | null;
+        category_id?: string | null;
+        category_name?: string;
         hospital_id?: string;
     };
     isLoading?: boolean;
@@ -46,6 +51,8 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
     initialData,
     isLoading = false
 }) => {
+    const { searchCategories } = useCategories();
+
     const [questionNumber, setQuestionNumber] = useState(initialData?.question_number || '');
     const [description, setDescription] = useState(initialData?.description || '');
     const [fieldType, setFieldType] = useState<'texto_curto' | 'texto_longo' | 'select' | 'boolean'>(
@@ -58,6 +65,11 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
     const [condition, setCondition] = useState(initialData?.condition || '');
     const [options, setOptions] = useState<string[]>(initialData?.options || []);
     const [newOption, setNewOption] = useState('');
+    const [categorySearchTerm, setCategorySearchTerm] = useState(initialData?.category_name || '');
+    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+    const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+
+    const { data: categoriesData } = searchCategories(categorySearchTerm);
 
     useEffect(() => {
         if (initialData) {
@@ -68,6 +80,13 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
             setSelectedRoles(initialData.roles || []);
             setCondition(initialData.condition || '');
             setOptions(initialData.options || []);
+            setCategorySearchTerm(initialData.category_name || '');
+            if (initialData.category_id && initialData.category_name) {
+                setSelectedCategory({
+                    public_id: initialData.category_id,
+                    name: initialData.category_name,
+                } as Category);
+            }
         }
     }, [initialData]);
 
@@ -77,6 +96,12 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         } else {
             setSelectedRoles([...selectedRoles, role]);
         }
+    };
+
+    const handleCategorySelect = (category: Category) => {
+        setSelectedCategory(category);
+        setCategorySearchTerm(category.name);
+        setShowCategoryDropdown(false);
     };
 
     const handleAddOption = () => {
@@ -126,6 +151,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
             roles: selectedRoles,
             condition: responseType === 'condicional' ? condition.trim() : null,
             options: fieldType === 'select' ? options : null,
+            category_id: selectedCategory ? selectedCategory.public_id : null,
         });
 
         handleClose();
@@ -140,6 +166,9 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         setCondition('');
         setOptions([]);
         setNewOption('');
+        setCategorySearchTerm('');
+        setSelectedCategory(null);
+        setShowCategoryDropdown(false);
         onClose();
     };
 
@@ -299,6 +328,49 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         </p>
                     </div>
                 )}
+
+                {/* Categoria (opcional) */}
+                <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Categoria (opcional)
+                    </label>
+                    <input
+                        type="text"
+                        value={categorySearchTerm}
+                        onChange={(e) => {
+                            setCategorySearchTerm(e.target.value);
+                            setShowCategoryDropdown(true);
+                            if (!e.target.value) {
+                                setSelectedCategory(null);
+                            }
+                        }}
+                        onFocus={() => setShowCategoryDropdown(true)}
+                        disabled={isReadOnly}
+                        placeholder="Digite para buscar uma categoria..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    />
+                    {showCategoryDropdown && categoriesData && categoriesData.items.length > 0 && !isReadOnly && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                            {categoriesData.items.map((category: Category) => (
+                                <div
+                                    key={category.public_id}
+                                    onClick={() => handleCategorySelect(category)}
+                                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                >
+                                    <div className="font-medium">{category.name}</div>
+                                    {category.description && (
+                                        <div className="text-sm text-gray-600">{category.description}</div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    {selectedCategory && (
+                        <p className="text-xs text-teal-600 mt-1">
+                            ✓ Categoria selecionada: {selectedCategory.name}
+                        </p>
+                    )}
+                </div>
 
                 {/* Roles */}
                 <div>

@@ -27,18 +27,8 @@ const RedirectToAllowed: React.FC = () => {
       return;
     }
 
-    // Pega todas as páginas permitidas para a role do usuário
-    const allowedPages = getAllowedPages(userRole);
-
-    if (allowedPages.length === 0) {
-      // Se não houver páginas permitidas, redireciona para login
-      console.warn('Usuário não tem permissão para acessar nenhuma página');
-      navigate('/', { replace: true });
-      return;
-    }
-
-    // Redireciona para a primeira página permitida
-    navigate(allowedPages[0], { replace: true });
+    // Sempre redireciona para o dashboard como página inicial
+    navigate('/dashboard', { replace: true });
   }, [navigate, user, isAuthenticated]);
 
   // Mostra uma mensagem de carregamento enquanto redireciona, com Layout

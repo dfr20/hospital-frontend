@@ -1,21 +1,58 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Layout } from "../../Components/Common/Layout/Layout";
-import { ArrowLeft, ClipboardCheck, ChevronDown, ChevronUp, Plus, Edit, Trash2, Users } from "lucide-react";
+import { ArrowLeft, ClipboardCheck, ChevronDown, ChevronUp, Plus, Edit, Trash2, Users, FileText } from "lucide-react";
 import Pagination from "../../Components/Common/Table/Pagination";
 import EvaluationModal from "../../Components/Common/Modal/EvaluationModal";
 import AssociateUserModal from "../../Components/Common/Modal/AssociateUserModal";
 import ConfirmationModal from "../../Components/Common/Modal/ConfirmationModal";
 import { usePublicAcquisitions } from "../../Hooks/usePublicAcquisitions";
 import { useEvaluations } from "../../Hooks/useEvaluations";
+import { useAnswers } from "../../Hooks/useAnswers";
 import { useToast } from "../../Contexts/ToastContext";
+import { useAuth } from "../../Contexts/AuthContext";
 import type { Evaluation } from "../../Types/Evaluation";
 import { getErrorMessage } from "../../Utils/errorHandler";
+
+// Componente auxiliar para mostrar o progresso de uma avaliação
+const EvaluationProgress: React.FC<{ evaluationId: string }> = ({ evaluationId }) => {
+  const { fetchAnswerStatistics } = useAnswers();
+  const { data: stats, isLoading } = fetchAnswerStatistics(evaluationId);
+
+  if (isLoading) {
+    return <div className="text-xs text-gray-500">Carregando...</div>;
+  }
+
+  if (!stats) {
+    return null;
+  }
+
+  const progressColor = stats.progress_percentage === 100 ? 'bg-green-500' :
+                       stats.progress_percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500';
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-xs text-gray-600">
+        <span>Progresso</span>
+        <span className="font-semibold">
+          {stats.answered_questions}/{stats.total_questions} ({stats.progress_percentage.toFixed(0)}%)
+        </span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div
+          className={`${progressColor} h-2 rounded-full transition-all duration-300`}
+          style={{ width: `${stats.progress_percentage}%` }}
+        />
+      </div>
+    </div>
+  );
+};
 
 const PublicAcquisitionDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
+  const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedEvaluations, setExpandedEvaluations] = useState<Set<string>>(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,6 +63,12 @@ const PublicAcquisitionDetails: React.FC = () => {
   const [isAssociateUserModalOpen, setIsAssociateUserModalOpen] = useState(false);
   const [evaluationToAssociate, setEvaluationToAssociate] = useState<Evaluation | null>(null);
   const itemsPerPage = 10;
+
+  // Roles que podem criar avaliações
+  const canCreateEvaluation = user?.role?.name && ['Desenvolvedor', 'Administrador', 'Gerente', 'Pregoeiro'].includes(user.role.name);
+
+  // Roles que podem editar/deletar avaliações
+  const canEditDeleteEvaluation = user?.role?.name && ['Administrador', 'Gerente'].includes(user.role.name);
 
   const { fetchPublicAcquisitionById } = usePublicAcquisitions();
   const {
@@ -251,13 +294,15 @@ const PublicAcquisitionDetails: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-6 border-b border-gray-200 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Avaliações da Licitação</h2>
-            <button
-              onClick={handleCreateEvaluation}
-              className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Criar Avaliação</span>
-            </button>
+            {canCreateEvaluation && (
+              <button
+                onClick={handleCreateEvaluation}
+                className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Criar Avaliação</span>
+              </button>
+            )}
           </div>
 
           <div className="p-4">
@@ -325,37 +370,58 @@ const PublicAcquisitionDetails: React.FC = () => {
                       {/* Conteúdo Expandido */}
                       {isExpanded && (
                         <div className="p-4 bg-white border-t border-gray-200">
+                          {/* Indicador de Progresso */}
+                          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                            <EvaluationProgress evaluationId={evaluation.public_id} />
+                          </div>
+
                           <div className="flex justify-end gap-2 mb-3">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleAssociateUserClick(evaluation);
+                                navigate(`/evaluations/${evaluation.public_id}/questionnaire`);
                               }}
-                              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+                              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
                             >
-                              <Users className="w-4 h-4" />
-                              <span>Associar Usuário</span>
+                              <FileText className="w-4 h-4" />
+                              <span>Responder Questionário</span>
                             </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEditEvaluation(evaluation);
-                              }}
-                              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                            >
-                              <Edit className="w-4 h-4" />
-                              <span>Editar</span>
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteClick(evaluation);
-                              }}
-                              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                              <span>Remover</span>
-                            </button>
+                            {canCreateEvaluation && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAssociateUserClick(evaluation);
+                                }}
+                                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+                              >
+                                <Users className="w-4 h-4" />
+                                <span>Associar Usuário</span>
+                              </button>
+                            )}
+                            {canEditDeleteEvaluation && (
+                              <>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditEvaluation(evaluation);
+                                  }}
+                                  className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                  <span>Editar</span>
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteClick(evaluation);
+                                  }}
+                                  className="flex items-center gap-2 px-3 py-1.5 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  <span>Remover</span>
+                                </button>
+                              </>
+                            )}
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
