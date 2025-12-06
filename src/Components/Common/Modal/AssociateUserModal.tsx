@@ -8,6 +8,7 @@ interface AssociateUserModalProps {
     onClose: () => void;
     onSubmit: (userId: string) => void;
     pregoeiroId?: string; // ID do Pregoeiro da licitação para filtrar
+    currentUserRole?: string; // Role do usuário atual para filtrar quem pode associar
     isLoading?: boolean;
 }
 
@@ -16,6 +17,7 @@ const AssociateUserModal: React.FC<AssociateUserModalProps> = ({
     onClose,
     onSubmit,
     pregoeiroId,
+    currentUserRole,
     isLoading = false
 }) => {
     const [userSearchTerm, setUserSearchTerm] = useState('');
@@ -24,6 +26,26 @@ const AssociateUserModal: React.FC<AssociateUserModalProps> = ({
 
     const { searchUsers } = useUsers();
     const { data: usersData } = searchUsers(userSearchTerm);
+
+    // Função para determinar quais roles podem ser associadas baseado na role do usuário atual
+    const getAllowedRolesToAssociate = (userRole?: string): string[] => {
+        if (!userRole) return [];
+
+        switch (userRole) {
+            case 'Pregoeiro':
+                return ['Avaliador Técnico'];
+            case 'Avaliador Técnico':
+                return ['Avaliador Funcional'];
+            case 'Administrador':
+            case 'Gerente':
+            case 'Desenvolvedor':
+                return ['Pregoeiro', 'Avaliador Técnico', 'Avaliador Funcional', 'Gerente', 'Administrador', 'Desenvolvedor'];
+            default:
+                return [];
+        }
+    };
+
+    const allowedRoles = getAllowedRolesToAssociate(currentUserRole);
 
     const handleUserSelect = (user: User) => {
         setSelectedUser(user);
@@ -53,14 +75,21 @@ const AssociateUserModal: React.FC<AssociateUserModalProps> = ({
     return (
         <Modal isOpen={isOpen} onClose={handleClose} title="Associar Usuário à Avaliação">
             <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="text-sm text-gray-600 mb-4">
-                    <p className="mb-2">Regras de associação:</p>
-                    <ul className="list-disc list-inside space-y-1 text-xs">
-                        <li><strong>Gerente/Administrador/Desenvolvedor</strong> podem associar qualquer usuário (incluindo <strong>Pregoeiro</strong>)</li>
-                        <li><strong>Pregoeiro</strong> pode associar <strong>Avaliador Técnico</strong></li>
-                        <li><strong>Avaliador Técnico</strong> pode associar <strong>Avaliador Funcional</strong></li>
-                    </ul>
-                </div>
+                {currentUserRole && (
+                    <div className="text-sm text-gray-600 mb-4 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                        <p className="mb-2 font-medium">Você pode associar:</p>
+                        <div className="flex flex-wrap gap-1">
+                            {allowedRoles.map((role) => (
+                                <span
+                                    key={role}
+                                    className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
+                                >
+                                    {role}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -83,7 +112,11 @@ const AssociateUserModal: React.FC<AssociateUserModalProps> = ({
                     {showUserDropdown && usersData && usersData.items.length > 0 && (
                         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
                             {usersData.items
-                                .filter((user: User) => user.public_id !== pregoeiroId)
+                                .filter((user: User) =>
+                                    user.public_id !== pregoeiroId &&
+                                    user.role?.name &&
+                                    allowedRoles.includes(user.role.name)
+                                )
                                 .map((user: User) => (
                                     <div
                                         key={user.public_id}

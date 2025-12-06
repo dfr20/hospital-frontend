@@ -1,15 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText } from 'lucide-react';
+import { ArrowLeft, FileText, Users, Save } from 'lucide-react';
 import AnswerQuestionnaire from '../../Components/Evaluation/AnswerQuestionnaire';
+import AssociateUserModal from '../../Components/Common/Modal/AssociateUserModal';
 import { useEvaluations } from '../../Hooks/useEvaluations';
+import { useAuth } from '../../Contexts/AuthContext';
+import { useToast } from '../../Contexts/ToastContext';
+import { getErrorMessage } from '../../Utils/errorHandler';
 
 const EvaluationQuestionnaire: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const toast = useToast();
 
-  const { fetchEvaluationById } = useEvaluations();
+  const [isAssociateUserModalOpen, setIsAssociateUserModalOpen] = useState(false);
+
+  const { fetchEvaluationById, associateUser } = useEvaluations();
   const { data: evaluation, isLoading } = fetchEvaluationById(id || '');
+  const associateUserMutation = associateUser();
 
   const handleBack = () => {
     if (evaluation?.public_acquisition?.public_id) {
@@ -21,6 +30,24 @@ const EvaluationQuestionnaire: React.FC = () => {
 
   const handleComplete = () => {
     handleBack();
+  };
+
+  const canAssociateUser = user?.role?.name && ['Administrador', 'Gerente', 'Pregoeiro', 'Avaliador Técnico'].includes(user.role.name);
+
+  const handleAssociateUserSubmit = async (userId: string) => {
+    if (!id) return;
+
+    try {
+      await associateUserMutation.mutateAsync({
+        evaluationId: id,
+        userId: userId
+      });
+      toast.success('Usuário associado', 'Usuário associado à avaliação com sucesso!');
+      setIsAssociateUserModalOpen(false);
+    } catch (error) {
+      console.error('Erro ao associar usuário:', error);
+      toast.error('Erro ao associar', getErrorMessage(error));
+    }
   };
 
   if (isLoading) {
@@ -94,9 +121,45 @@ const EvaluationQuestionnaire: React.FC = () => {
           <AnswerQuestionnaire
             evaluationId={id || ''}
             onComplete={handleComplete}
+            hideFloatingButton={true}
           />
         </div>
+
+        {/* Botões flutuantes */}
+        <div className="fixed bottom-6 right-6 z-10 flex flex-col-reverse gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              // Dispara evento customizado para trigger save no AnswerQuestionnaire
+              window.dispatchEvent(new Event('triggerManualSave'));
+            }}
+            className="w-16 h-16 bg-teal-600 text-white rounded-full hover:bg-teal-700 transition-all shadow-lg flex items-center justify-center hover:scale-110"
+            title="Salvar Respostas"
+          >
+            <Save className="w-7 h-7" />
+          </button>
+          {canAssociateUser && (
+            <button
+              type="button"
+              onClick={() => setIsAssociateUserModalOpen(true)}
+              className="w-16 h-16 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all shadow-lg flex items-center justify-center hover:scale-110"
+              title="Associar Usuário"
+            >
+              <Users className="w-7 h-7" />
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Modal para Associar Usuário */}
+      <AssociateUserModal
+        isOpen={isAssociateUserModalOpen}
+        onClose={() => setIsAssociateUserModalOpen(false)}
+        onSubmit={handleAssociateUserSubmit}
+        pregoeiroId={evaluation?.public_acquisition?.user_public_id}
+        currentUserRole={user?.role?.name}
+        isLoading={associateUserMutation.isPending}
+      />
     </div>
   );
 };

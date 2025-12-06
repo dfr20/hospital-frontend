@@ -6,21 +6,16 @@ import type {
     BulkAnswerPayload,
     AnswerUpdatePayload,
     AnswerResponse,
-    ApplicableQuestionsResponse
+    ApplicableQuestionsResponse,
+    EvaluationStatistics
 } from '../Types/Answer';
-
-export interface AnswerStatistics {
-    total_questions: number;
-    answered_questions: number;
-    progress_percentage: number;
-}
 
 interface UseAnswersInterface {
     fetchAnswersByEvaluation: (evaluationId: string, page?: number, size?: number) => ReturnType<typeof useQuery<AnswerResponse>>;
     fetchAnswersByQuestion: (questionId: string, page?: number, size?: number) => ReturnType<typeof useQuery<AnswerResponse>>;
     fetchAnswerById: (id: string) => ReturnType<typeof useQuery<Answer>>;
     fetchApplicableQuestions: (evaluationId: string) => ReturnType<typeof useQuery<ApplicableQuestionsResponse>>;
-    fetchAnswerStatistics: (evaluationId: string) => ReturnType<typeof useQuery<AnswerStatistics>>;
+    fetchEvaluationStatistics: (evaluationId: string) => ReturnType<typeof useQuery<EvaluationStatistics>>;
     createAnswer: () => ReturnType<typeof useMutation<Answer, Error, AnswerPayload>>;
     createBulkAnswers: () => ReturnType<typeof useMutation<Answer[], Error, BulkAnswerPayload>>;
     updateAnswer: () => ReturnType<typeof useMutation<Answer, Error, { id: string; data: AnswerUpdatePayload }>>;
@@ -80,11 +75,11 @@ export const useAnswers = (): UseAnswersInterface => {
         });
     };
 
-    const fetchAnswerStatistics = (evaluationId: string) => {
+    const fetchEvaluationStatistics = (evaluationId: string) => {
         return useQuery({
-            queryKey: ['answer-statistics', evaluationId],
-            queryFn: async (): Promise<AnswerStatistics> => {
-                const response = await api.get<AnswerStatistics>(
+            queryKey: ['evaluation-statistics', evaluationId],
+            queryFn: async (): Promise<EvaluationStatistics> => {
+                const response = await api.get<EvaluationStatistics>(
                     `/answers/evaluation/${evaluationId}/statistics`
                 );
                 return response.data;
@@ -107,7 +102,7 @@ export const useAnswers = (): UseAnswersInterface => {
                     queryKey: ['applicable-questions', newAnswer.evaluation_id]
                 });
                 queryClient.invalidateQueries({
-                    queryKey: ['answer-statistics', newAnswer.evaluation_id]
+                    queryKey: ['evaluation-statistics', newAnswer.evaluation_id]
                 });
 
                 queryClient.setQueryData(
@@ -132,7 +127,7 @@ export const useAnswers = (): UseAnswersInterface => {
                     queryKey: ['applicable-questions', variables.evaluation_id]
                 });
                 queryClient.invalidateQueries({
-                    queryKey: ['answer-statistics', variables.evaluation_id]
+                    queryKey: ['evaluation-statistics', variables.evaluation_id]
                 });
             },
         });
@@ -152,7 +147,7 @@ export const useAnswers = (): UseAnswersInterface => {
                     queryKey: ['applicable-questions', updatedAnswer.evaluation_id]
                 });
                 queryClient.invalidateQueries({
-                    queryKey: ['answer-statistics', updatedAnswer.evaluation_id]
+                    queryKey: ['evaluation-statistics', updatedAnswer.evaluation_id]
                 });
 
                 queryClient.setQueryData(
@@ -172,7 +167,7 @@ export const useAnswers = (): UseAnswersInterface => {
             queryKey: ['applicable-questions']
         });
         queryClient.invalidateQueries({
-            queryKey: ['answer-statistics']
+            queryKey: ['evaluation-statistics']
         });
     };
 
@@ -181,7 +176,7 @@ export const useAnswers = (): UseAnswersInterface => {
         fetchAnswersByQuestion,
         fetchAnswerById,
         fetchApplicableQuestions,
-        fetchAnswerStatistics,
+        fetchEvaluationStatistics,
         createAnswer,
         createBulkAnswers,
         updateAnswer,

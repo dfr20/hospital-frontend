@@ -17,35 +17,35 @@ export interface Permission {
 export const permissions: Permission[] = [
   {
     page: '/users',
-    roles: [RoleName.ADMINISTRADOR, RoleName.DESENVOLVEDOR]
+    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
   },
   {
     page: '/items',
-    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE, RoleName.PREGOEIRO]
+    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
   },
   {
     page: '/categories',
-    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE, RoleName.PREGOEIRO]
+    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
   },
   {
     page: '/subcategories',
-    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE, RoleName.PREGOEIRO]
+    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
   },
   {
     page: '/hospitals',
-    roles: [RoleName.DESENVOLVEDOR]
+    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
   },
   {
     page: '/catalog',
-    roles: [RoleName.DESENVOLVEDOR, RoleName.PREGOEIRO]
+    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
   },
   {
     page: '/suppliers',
-    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE, RoleName.PREGOEIRO]
+    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
   },
   {
     page: '/job-titles',
-    roles: []
+    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
   },
   {
     page: '/dashboard',

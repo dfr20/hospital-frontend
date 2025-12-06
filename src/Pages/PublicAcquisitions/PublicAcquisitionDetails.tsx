@@ -16,8 +16,8 @@ import { getErrorMessage } from "../../Utils/errorHandler";
 
 // Componente auxiliar para mostrar o progresso de uma avaliação
 const EvaluationProgress: React.FC<{ evaluationId: string }> = ({ evaluationId }) => {
-  const { fetchAnswerStatistics } = useAnswers();
-  const { data: stats, isLoading } = fetchAnswerStatistics(evaluationId);
+  const { fetchEvaluationStatistics } = useAnswers();
+  const { data: stats, isLoading } = fetchEvaluationStatistics(evaluationId);
 
   if (isLoading) {
     return <div className="text-xs text-gray-500">Carregando...</div>;
@@ -27,21 +27,21 @@ const EvaluationProgress: React.FC<{ evaluationId: string }> = ({ evaluationId }
     return null;
   }
 
-  const progressColor = stats.progress_percentage === 100 ? 'bg-green-500' :
-                       stats.progress_percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500';
+  const progressColor = stats.completion_percentage === 100 ? 'bg-green-500' :
+                       stats.completion_percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500';
 
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs text-gray-600">
         <span>Progresso</span>
         <span className="font-semibold">
-          {stats.answered_questions}/{stats.total_questions} ({stats.progress_percentage.toFixed(0)}%)
+          {stats.answered_questions}/{stats.total_questions} ({stats.completion_percentage.toFixed(0)}%)
         </span>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-2">
         <div
           className={`${progressColor} h-2 rounded-full transition-all duration-300`}
-          style={{ width: `${stats.progress_percentage}%` }}
+          style={{ width: `${stats.completion_percentage}%` }}
         />
       </div>
     </div>
@@ -69,6 +69,9 @@ const PublicAcquisitionDetails: React.FC = () => {
 
   // Roles que podem editar/deletar avaliações
   const canEditDeleteEvaluation = user?.role?.name && ['Administrador', 'Gerente'].includes(user.role.name);
+
+  // Roles que podem associar usuários
+  const canAssociateUser = user?.role?.name && ['Administrador', 'Gerente', 'Pregoeiro', 'Avaliador Técnico'].includes(user.role.name);
 
   const { fetchPublicAcquisitionById } = usePublicAcquisitions();
   const {
@@ -386,7 +389,7 @@ const PublicAcquisitionDetails: React.FC = () => {
                               <FileText className="w-4 h-4" />
                               <span>Responder Questionário</span>
                             </button>
-                            {canCreateEvaluation && (
+                            {canAssociateUser && (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -577,6 +580,7 @@ const PublicAcquisitionDetails: React.FC = () => {
         }}
         onSubmit={handleAssociateUserSubmit}
         pregoeiroId={publicAcquisition?.user_public_id}
+        currentUserRole={user?.role?.name}
         isLoading={associateUserMutation.isPending}
       />
 

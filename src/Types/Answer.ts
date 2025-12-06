@@ -8,8 +8,7 @@ export interface Answer {
   question: Question;
   user_id: string;
   user: User;
-  answer_text: string | null;
-  answer_boolean: boolean | null;
+  answer_value: string;
   created_at: string;
   updated_at: string;
 }
@@ -17,22 +16,19 @@ export interface Answer {
 export interface AnswerPayload {
   evaluation_id: string;
   question_id: string;
-  answer_text?: string | null;
-  answer_boolean?: boolean | null;
+  answer_value: string;
 }
 
 export interface BulkAnswerPayload {
   evaluation_id: string;
   answers: {
     question_id: string;
-    answer_text?: string | null;
-    answer_boolean?: boolean | null;
+    answer_value: string;
   }[];
 }
 
 export interface AnswerUpdatePayload {
-  answer_text?: string | null;
-  answer_boolean?: boolean | null;
+  answer_value: string;
 }
 
 export interface AnswerResponse {
@@ -46,13 +42,17 @@ export interface AnswerResponse {
 }
 
 export interface ApplicableQuestion extends Question {
-  answer?: Answer;
+  answer_value: string | null;
+  answer_id: string | null;
 }
 
-export interface ApplicableQuestionsResponse {
-  evaluation_id: string;
-  user_role: string;
-  questions: ApplicableQuestion[];
+// O backend retorna diretamente uma lista de questões com answer_value e answer_id
+export type ApplicableQuestionsResponse = ApplicableQuestion[];
+
+export interface EvaluationStatistics {
   total_questions: number;
   answered_questions: number;
+  pending_questions: number;
+  completion_percentage: number;
+  status: 'OK' | 'PENDING';
 }
