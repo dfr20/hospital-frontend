@@ -22,7 +22,7 @@ export const sidebarData: SidebarDataType = {
     icon: Building2
   },
   menuItems: [
-    { id: 'dashboard', label: 'Dashboard', icon: Home, route: '/dashboard' },
+    { id: 'dashboard', label: 'Home', icon: Home, route: '/dashboard' },
     { id: 'usuarios', label: 'Usuários', icon: Users, route: '/users' },
     { id: 'hospitais', label: 'Hospitais', icon: Building2, route: '/hospitals' },
     { id: 'suppliers', label: 'Fornecedores', icon: Truck, route: '/suppliers' },
@@ -47,4 +47,32 @@ export const routeToPageId: Record<string, string> = {
   '/job-titles': 'cargos',
   '/public-acquisitions': 'public-acquisitions',
   '/questions': 'questions'
+};
+
+// Função para obter o pageId baseado na rota, incluindo rotas dinâmicas
+export const getPageIdFromRoute = (pathname: string): string => {
+  // Tenta match exato primeiro
+  if (routeToPageId[pathname]) {
+    return routeToPageId[pathname];
+  }
+
+  // Verifica rotas que começam com /public-acquisitions (incluindo detalhes)
+  if (pathname.startsWith('/public-acquisitions')) {
+    return 'public-acquisitions';
+  }
+
+  // Verifica rotas que começam com /evaluations (questionário)
+  if (pathname.startsWith('/evaluations')) {
+    return 'public-acquisitions';
+  }
+
+  // Verifica outras rotas base
+  for (const route in routeToPageId) {
+    if (pathname.startsWith(route) && route !== '/') {
+      return routeToPageId[route];
+    }
+  }
+
+  // Fallback para dashboard
+  return 'dashboard';
 };

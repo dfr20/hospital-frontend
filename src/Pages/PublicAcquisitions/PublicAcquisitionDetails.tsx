@@ -294,263 +294,262 @@ const PublicAcquisitionDetails: React.FC = () => {
         </div>
 
         {/* Lista de Avaliações */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Avaliações da Licitação</h2>
-            {canCreateEvaluation && (
-              <button
-                onClick={handleCreateEvaluation}
-                className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Criar Avaliação</span>
-              </button>
-            )}
-          </div>
+        <>
+          <div className="bg-white rounded-lg shadow-sm">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">Avaliações da Licitação</h2>
+              {canCreateEvaluation && (
+                <button
+                  onClick={handleCreateEvaluation}
+                  className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Criar Avaliação</span>
+                </button>
+              )}
+            </div>
 
-          <div className="p-4">
-            {isLoading || isLoadingPA ? (
-              <div className="flex items-center justify-center h-64">
-                <div className="text-gray-500">Carregando...</div>
-              </div>
-            ) : data?.items && data.items.length > 0 ? (
-              <div className="space-y-3">
-                {data.items.map((evaluation: Evaluation) => {
-                  const isExpanded = expandedEvaluations.has(evaluation.public_id);
+            <div className="p-4">
+              {isLoading || isLoadingPA ? (
+                <div className="flex items-center justify-center h-64">
+                  <div className="text-gray-500">Carregando...</div>
+                </div>
+              ) : data?.items && data.items.length > 0 ? (
+                <div className="space-y-3">
+                  {data.items.map((evaluation: Evaluation) => {
+                    const isExpanded = expandedEvaluations.has(evaluation.public_id);
 
-                  return (
-                    <div
-                      key={evaluation.public_id}
-                      className="border border-gray-200 rounded-lg overflow-hidden hover:border-teal-300 transition-colors"
-                    >
-                      {/* Header da Avaliação - Sempre visível */}
+                    return (
                       <div
-                        className="p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-                        onClick={() => toggleEvaluation(evaluation.public_id)}
+                        key={evaluation.public_id}
+                        className="border border-gray-200 rounded-lg overflow-hidden hover:border-teal-300 transition-colors"
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {evaluation.item.name}
+                        {/* Header da Avaliação - Sempre visível */}
+                        <div
+                          className="p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                          onClick={() => toggleEvaluation(evaluation.public_id)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  {evaluation.item.name}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  Código: {evaluation.item.internal_code}
+                                </div>
                               </div>
-                              <div className="text-xs text-gray-500">
-                                Código: {evaluation.item.internal_code}
+                              <div className="hidden md:block">
+                                <div className="text-sm text-gray-700">
+                                  {evaluation.supplier.name}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {evaluation.supplier.document}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                {evaluation.is_holder && (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Detentor
+                                  </span>
+                                )}
+                                <div className="flex items-center gap-1">
+                                  <Users className="w-4 h-4 text-gray-500" />
+                                  <span className="text-sm text-gray-600">
+                                    {evaluation.users.length} {evaluation.users.length === 1 ? 'avaliador' : 'avaliadores'}
+                                  </span>
+                                </div>
                               </div>
                             </div>
-                            <div className="hidden md:block">
-                              <div className="text-sm text-gray-700">
-                                {evaluation.supplier.name}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                {evaluation.supplier.document}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              {evaluation.is_holder && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                  Detentor
-                                </span>
+                            <div className="ml-4">
+                              {isExpanded ? (
+                                <ChevronUp className="w-5 h-5 text-gray-500" />
+                              ) : (
+                                <ChevronDown className="w-5 h-5 text-gray-500" />
                               )}
-                              <div className="flex items-center gap-1">
-                                <Users className="w-4 h-4 text-gray-500" />
-                                <span className="text-sm text-gray-600">
-                                  {evaluation.users.length} {evaluation.users.length === 1 ? 'avaliador' : 'avaliadores'}
-                                </span>
-                              </div>
                             </div>
-                          </div>
-                          <div className="ml-4">
-                            {isExpanded ? (
-                              <ChevronUp className="w-5 h-5 text-gray-500" />
-                            ) : (
-                              <ChevronDown className="w-5 h-5 text-gray-500" />
-                            )}
                           </div>
                         </div>
-                      </div>
 
-                      {/* Conteúdo Expandido */}
-                      {isExpanded && (
-                        <div className="p-4 bg-white border-t border-gray-200">
-                          {/* Indicador de Progresso */}
-                          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                            <EvaluationProgress evaluationId={evaluation.public_id} />
-                          </div>
+                        {/* Conteúdo Expandido */}
+                        {isExpanded && (
+                          <div className="p-4 bg-white border-t border-gray-200">
+                            {/* Indicador de Progresso */}
+                            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                              <EvaluationProgress evaluationId={evaluation.public_id} />
+                            </div>
 
-                          <div className="flex justify-end gap-2 mb-3">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/evaluations/${evaluation.public_id}/questionnaire`);
-                              }}
-                              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                            >
-                              <FileText className="w-4 h-4" />
-                              <span>Responder Questionário</span>
-                            </button>
-                            {canAssociateUser && (
+                            <div className="flex justify-end gap-2 mb-3">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleAssociateUserClick(evaluation);
+                                  navigate(`/evaluations/${evaluation.public_id}/questionnaire`);
                                 }}
-                                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
+                                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
                               >
-                                <Users className="w-4 h-4" />
-                                <span>Associar Usuário</span>
+                                <FileText className="w-4 h-4" />
+                                <span>Responder Questionário</span>
                               </button>
-                            )}
-                            {canEditDeleteEvaluation && (
-                              <>
+                              {canAssociateUser && (
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleEditEvaluation(evaluation);
+                                    handleAssociateUserClick(evaluation);
                                   }}
-                                  className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                                  className="flex items-center gap-2 px-3 py-1.5 text-sm bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors"
                                 >
-                                  <Edit className="w-4 h-4" />
-                                  <span>Editar</span>
+                                  <Users className="w-4 h-4" />
+                                  <span>Associar Usuário</span>
                                 </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteClick(evaluation);
-                                  }}
-                                  className="flex items-center gap-2 px-3 py-1.5 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                  <span>Remover</span>
-                                </button>
-                              </>
-                            )}
-                          </div>
+                              )}
+                              {canEditDeleteEvaluation && (
+                                <>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditEvaluation(evaluation);
+                                    }}
+                                    className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                    <span>Editar</span>
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteClick(evaluation);
+                                    }}
+                                    className="flex items-center gap-2 px-3 py-1.5 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                    <span>Remover</span>
+                                  </button>
+                                </>
+                              )}
+                            </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Informações do Item */}
-                            <div>
-                              <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                                Informações do Item
-                              </h4>
-                              <dl className="space-y-2">
-                                <div>
-                                  <dt className="text-xs text-gray-500">Descrição:</dt>
-                                  <dd className="text-sm text-gray-900">{evaluation.item.description || 'N/A'}</dd>
-                                </div>
-                                <div>
-                                  <dt className="text-xs text-gray-500">Apresentação:</dt>
-                                  <dd className="text-sm text-gray-900">{evaluation.item.presentation || 'N/A'}</dd>
-                                </div>
-                                {evaluation.item.similar_names && evaluation.item.similar_names.length > 0 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {/* Informações do Item */}
+                              <div>
+                                <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                                  Informações do Item
+                                </h4>
+                                <dl className="space-y-2">
                                   <div>
-                                    <dt className="text-xs text-gray-500">Nomes Similares:</dt>
-                                    <dd className="text-sm text-gray-900">
-                                      {evaluation.item.similar_names.join(', ')}
-                                    </dd>
+                                    <dt className="text-xs text-gray-500">Descrição:</dt>
+                                    <dd className="text-sm text-gray-900">{evaluation.item.description || 'N/A'}</dd>
                                   </div>
-                                )}
-                              </dl>
-                            </div>
-
-                            {/* Informações do Fornecedor */}
-                            <div>
-                              <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                                Informações do Fornecedor
-                              </h4>
-                              <dl className="space-y-2">
-                                <div>
-                                  <dt className="text-xs text-gray-500">Nome:</dt>
-                                  <dd className="text-sm text-gray-900">{evaluation.supplier.name}</dd>
-                                </div>
-                                <div>
-                                  <dt className="text-xs text-gray-500">{evaluation.supplier.document_type}:</dt>
-                                  <dd className="text-sm text-gray-900">{evaluation.supplier.document}</dd>
-                                </div>
-                                <div>
-                                  <dt className="text-xs text-gray-500">Email:</dt>
-                                  <dd className="text-sm text-gray-900">{evaluation.supplier.email}</dd>
-                                </div>
-                                <div>
-                                  <dt className="text-xs text-gray-500">Telefone:</dt>
-                                  <dd className="text-sm text-gray-900">{evaluation.supplier.phone}</dd>
-                                </div>
-                              </dl>
-                            </div>
-                          </div>
-
-                          {/* Usuários Avaliadores */}
-                          <div className="mt-4 pt-4 border-t border-gray-200">
-                            <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                              <Users className="w-4 h-4" />
-                              Usuários Avaliadores
-                            </h4>
-                            {evaluation.users.length > 0 ? (
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                {evaluation.users.map((user) => {
-                                  const getRoleBadgeColor = (roleName: string) => {
-                                    if (roleName === 'Pregoeiro') {
-                                      return 'bg-blue-100 text-blue-800';
-                                    }
-                                    if (roleName === 'Avaliador Técnico') {
-                                      return 'bg-purple-100 text-purple-800';
-                                    }
-                                    if (roleName === 'Avaliador Funcional') {
-                                      return 'bg-amber-100 text-amber-800';
-                                    }
-                                    return 'bg-gray-100 text-gray-800';
-                                  };
-
-                                  return (
-                                    <div
-                                      key={user.public_id}
-                                      className="bg-gray-50 p-3 rounded-lg border border-gray-200"
-                                    >
-                                      <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                          <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                                          <div className="text-xs text-gray-600">{user.email}</div>
-                                        </div>
-                                      </div>
-                                      {user.role && (
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mt-2 ${getRoleBadgeColor(user.role.name)}`}>
-                                          {user.role.name}
-                                        </span>
-                                      )}
+                                  <div>
+                                    <dt className="text-xs text-gray-500">Apresentação:</dt>
+                                    <dd className="text-sm text-gray-900">{evaluation.item.presentation || 'N/A'}</dd>
+                                  </div>
+                                  {evaluation.item.similar_names && evaluation.item.similar_names.length > 0 && (
+                                    <div>
+                                      <dt className="text-xs text-gray-500">Nomes Similares:</dt>
+                                      <dd className="text-sm text-gray-900">
+                                        {evaluation.item.similar_names.join(', ')}
+                                      </dd>
                                     </div>
-                                  );
-                                })}
+                                  )}
+                                </dl>
                               </div>
-                            ) : (
-                              <p className="text-sm text-gray-500 italic">
-                                Nenhum usuário avaliador atribuído.
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-12 text-gray-500">
-                Nenhuma avaliação encontrada nesta licitação
-              </div>
-            )}
 
-            {data && data.total > itemsPerPage && (
-              <div className="mt-6">
-                <Pagination
-                  currentPage={currentPage}
-                  totalItems={data.total}
-                  itemsPerPage={itemsPerPage}
-                  onPageChange={handlePageChange}
-                />
-              </div>
-            )}
+                              {/* Informações do Fornecedor */}
+                              <div>
+                                <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                                  Informações do Fornecedor
+                                </h4>
+                                <dl className="space-y-2">
+                                  <div>
+                                    <dt className="text-xs text-gray-500">Nome:</dt>
+                                    <dd className="text-sm text-gray-900">{evaluation.supplier.name}</dd>
+                                  </div>
+                                  <div>
+                                    <dt className="text-xs text-gray-500">{evaluation.supplier.document_type}:</dt>
+                                    <dd className="text-sm text-gray-900">{evaluation.supplier.document}</dd>
+                                  </div>
+                                  <div>
+                                    <dt className="text-xs text-gray-500">Email:</dt>
+                                    <dd className="text-sm text-gray-900">{evaluation.supplier.email}</dd>
+                                  </div>
+                                  <div>
+                                    <dt className="text-xs text-gray-500">Telefone:</dt>
+                                    <dd className="text-sm text-gray-900">{evaluation.supplier.phone}</dd>
+                                  </div>
+                                </dl>
+                              </div>
+                            </div>
+
+                            {/* Usuários Avaliadores */}
+                            <div className="mt-4 pt-4 border-t border-gray-200">
+                              <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                <Users className="w-4 h-4" />
+                                Usuários Avaliadores
+                              </h4>
+                              {evaluation.users.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                  {evaluation.users.map((user) => {
+                                    const getRoleBadgeColor = (roleName: string) => {
+                                      if (roleName === 'Pregoeiro') {
+                                        return 'bg-blue-100 text-blue-800';
+                                      }
+                                      if (roleName === 'Avaliador Técnico') {
+                                        return 'bg-purple-100 text-purple-800';
+                                      }
+                                      if (roleName === 'Avaliador Funcional') {
+                                        return 'bg-amber-100 text-amber-800';
+                                      }
+                                      return 'bg-gray-100 text-gray-800';
+                                    };
+
+                                    return (
+                                      <div
+                                        key={user.public_id}
+                                        className="bg-gray-50 p-3 rounded-lg border border-gray-200"
+                                      >
+                                        <div className="flex items-start justify-between">
+                                          <div className="flex-1">
+                                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                            <div className="text-xs text-gray-600">{user.email}</div>
+                                          </div>
+                                        </div>
+                                        {user.role && (
+                                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mt-2 ${getRoleBadgeColor(user.role.name)}`}>
+                                            {user.role.name}
+                                          </span>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-gray-500 italic">
+                                  Nenhum usuário avaliador atribuído.
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  Nenhuma avaliação encontrada nesta licitação
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+          {data && data.total > itemsPerPage && (
+            <Pagination
+              currentPage={currentPage}
+              totalItems={data.total}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+            />
+          )}
+        </>
       </div>
 
       {/* Modal para Criar/Editar Avaliação */}

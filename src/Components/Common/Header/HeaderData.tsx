@@ -65,7 +65,7 @@ export const headerConfigs: Record<string, HeaderDataType> = {
     ]
   },
   '/items': {
-    breadcrumb: ['Admin', 'Items'],
+    breadcrumb: ['Admin', 'Itens'],
     title: 'Items',
     actions: [
       { id: 'settings', icon: Settings, type: 'icon' },

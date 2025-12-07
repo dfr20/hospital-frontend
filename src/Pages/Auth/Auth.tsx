@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CircleUser, KeyRound, Hospital } from 'lucide-react';
+import { CircleUser, KeyRound, Hospital, Eye, EyeOff } from 'lucide-react';
 import backgroundImage from '../../assets/auth-bg/costa.png';
 import { useAuth } from '../../Contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +8,7 @@ const Auth: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -30,7 +31,9 @@ const Auth: React.FC = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Erro ao fazer login');
+      const errorMessage = err.response?.data?.detail || 'Erro ao fazer login';
+      setError(errorMessage);
+      // Não limpa os campos de email e senha para o usuário tentar novamente
     }
   };
 
@@ -69,14 +72,23 @@ const Auth: React.FC = () => {
 
           <div className="relative">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="border p-3 md:p-2 rounded w-full pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-teal-300 focus:border-transparent text-base"
+              className="border p-3 md:p-2 rounded w-full pl-3 pr-20 focus:outline-none focus:ring-2 focus:ring-teal-300 focus:border-transparent text-base"
               disabled={isLoading}
             />
-            <KeyRound className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-gray-500 hover:text-gray-700 transition-colors focus:outline-none"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
 
           <button

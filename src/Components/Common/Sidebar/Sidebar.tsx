@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { sidebarData, routeToPageId } from './SidebarData';
+import { sidebarData, getPageIdFromRoute } from './SidebarData';
 import { hasPermission } from '../../../Utils/permissions';
 import { useAuth } from '../../../Contexts/AuthContext';
 
@@ -23,16 +23,14 @@ const Sidebar: React.FC = () => {
     return sidebarData.menuItems.filter(item => hasPermission(userRole, item.route));
   }, [userRole]);
 
-  // Define o activePage baseado na rota atual
-  const currentPageId = routeToPageId[location.pathname] || 'dashboard';
+  // Define o activePage baseado na rota atual usando a nova função
+  const currentPageId = getPageIdFromRoute(location.pathname);
   const [activePage, setActivePage] = useState(currentPageId);
 
   // Sincroniza o activePage sempre que a rota mudar
   useEffect(() => {
-    const pageId = routeToPageId[location.pathname];
-    if (pageId) {
-      setActivePage(pageId);
-    }
+    const pageId = getPageIdFromRoute(location.pathname);
+    setActivePage(pageId);
   }, [location.pathname]);
 
   const handlePageChange = (route: string) => {

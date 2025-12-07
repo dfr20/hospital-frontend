@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "../../Components/Common/Layout/Layout";
 import { Filter, Plus, ChevronDown, ChevronUp, Users, Building2 } from "lucide-react";
-import Pagination from "../../Components/Common/Table/Pagination";
+import { Pagination } from "../../Components/Common/Table/Pagination";
 import Modal from "../../Components/Common/Modal/Modal";
 import ConfirmationModal from "../../Components/Common/Modal/ConfirmationModal";
 import type { Item, ItemPayload } from "../../Types/Item";
@@ -48,15 +48,17 @@ const ItemsWithEvaluations: React.FC = () => {
     id: item.public_id,
   }));
 
-  const filteredItems = itemsWithId.filter((item) => {
-    if (!searchTerm) return true;
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    return (
-      item.name.toLowerCase().includes(lowerSearchTerm) ||
-      item.description.toLowerCase().includes(lowerSearchTerm) ||
-      item.internal_code.toLowerCase().includes(lowerSearchTerm)
-    );
-  });
+  // Aplicar filtro de busca apenas se houver termo de busca
+  const filteredItems = searchTerm
+    ? itemsWithId.filter((item) => {
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        return (
+          item.name.toLowerCase().includes(lowerSearchTerm) ||
+          item.description.toLowerCase().includes(lowerSearchTerm) ||
+          item.internal_code.toLowerCase().includes(lowerSearchTerm)
+        );
+      })
+    : itemsWithId;
 
   const toggleItemExpand = (itemId: string) => {
     setExpandedItems(prev => {
@@ -204,48 +206,51 @@ const ItemsWithEvaluations: React.FC = () => {
         </div>
 
         {/* Lista de Itens */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-4">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-64">
-                <div className="text-gray-500">Carregando...</div>
+        <div>
+          {isLoading ? (
+            <div className="bg-white rounded-lg shadow-sm flex items-center justify-center h-64">
+              <div className="text-gray-500">Carregando...</div>
+            </div>
+          ) : searchTerm && filteredItems.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-sm text-center py-12 text-gray-500">
+              Nenhum item encontrado com esse termo
+            </div>
+          ) : !searchTerm && itemsWithId.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-sm text-center py-12 text-gray-500">
+              Nenhum item encontrado
+            </div>
+          ) : (
+            <>
+              <div className="bg-white rounded-lg shadow-sm">
+                <div className="p-4 space-y-3">
+                  {(searchTerm ? filteredItems : itemsWithId).map((item) => {
+                    const isExpanded = expandedItems.has(item.public_id);
+                    return (
+                      <ItemCard
+                        key={item.public_id}
+                        item={item}
+                        isExpanded={isExpanded}
+                        onToggle={() => toggleItemExpand(item.public_id)}
+                        onEdit={() => handleEdit(item)}
+                        onView={() => handleView(item)}
+                        onDelete={() => handleDelete(item)}
+                        fetchEvaluationsByItem={fetchEvaluationsByItem}
+                        navigate={navigate}
+                      />
+                    );
+                  })}
+                </div>
               </div>
-            ) : filteredItems.length > 0 ? (
-              <div className="space-y-3">
-                {filteredItems.map((item) => {
-                  const isExpanded = expandedItems.has(item.public_id);
-                  return (
-                    <ItemCard
-                      key={item.public_id}
-                      item={item}
-                      isExpanded={isExpanded}
-                      onToggle={() => toggleItemExpand(item.public_id)}
-                      onEdit={() => handleEdit(item)}
-                      onView={() => handleView(item)}
-                      onDelete={() => handleDelete(item)}
-                      fetchEvaluationsByItem={fetchEvaluationsByItem}
-                      navigate={navigate}
-                    />
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-12 text-gray-500">
-                {searchTerm ? "Nenhum item encontrado com esse termo" : "Nenhum item encontrado"}
-              </div>
-            )}
-
-            {!searchTerm && itemsData && itemsData.total > itemsPerPage && (
-              <div className="mt-6">
+              {!searchTerm && (
                 <Pagination
                   currentPage={currentPage}
-                  totalItems={itemsData.total}
+                  totalItems={itemsData?.total || 0}
                   itemsPerPage={itemsPerPage}
                   onPageChange={handlePageChange}
                 />
-              </div>
-            )}
-          </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
@@ -269,16 +274,9 @@ const ItemsWithEvaluations: React.FC = () => {
             onSubmit={handleSubmitItem}
             onCancel={handleCloseModal}
             isLoading={isCreating || isUpdating}
-            initialValues={selectedItem ? {
-              name: selectedItem.name,
-              description: selectedItem.description,
-              internal_code: selectedItem.internal_code,
-              presentation: selectedItem.presentation,
-              similar_names: selectedItem.similar_names || [],
-              requires_sample: selectedItem.requires_sample,
-              subcategory_id: selectedItem.subcategory?.public_id || ''
-            } : undefined}
+            initialValues={selectedItem ? selectedItem : undefined}
             subcategories={subcategoriesData?.items || []}
+            isLoadingSubcategories={isLoadingSubcategories}
             readOnly={isViewMode}
           />
         )}
@@ -320,10 +318,13 @@ const ItemCard: React.FC<ItemCardProps> = ({
   fetchEvaluationsByItem,
   navigate
 }) => {
+  const [evaluationPage, setEvaluationPage] = useState(1);
+  const evaluationsPerPage = 5;
+
   const { data: evaluationsData, isLoading: isLoadingEvaluations } = fetchEvaluationsByItem(
     isExpanded ? item.public_id : '',
-    1,
-    25
+    evaluationPage,
+    evaluationsPerPage
   );
 
   return (
@@ -340,9 +341,9 @@ const ItemCard: React.FC<ItemCardProps> = ({
                 <div className="text-sm font-medium text-gray-900">{item.name}</div>
                 <div className="text-xs text-gray-500">Código: {item.internal_code}</div>
               </div>
-              {item.requires_sample && (
+              {item.sample > 0 && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                  Amostra
+                  Amostra: {item.sample}
                 </span>
               )}
             </div>
@@ -389,64 +390,74 @@ const ItemCard: React.FC<ItemCardProps> = ({
         <div className="p-4 bg-white border-t border-gray-200">
           <h4 className="text-sm font-semibold text-gray-900 mb-3">
             Avaliações deste Item
+            {evaluationsData && evaluationsData.total > 0 && (
+              <span className="ml-2 text-xs text-gray-500 font-normal">
+                ({evaluationsData.total} {evaluationsData.total === 1 ? 'avaliação' : 'avaliações'})
+              </span>
+            )}
           </h4>
           {isLoadingEvaluations ? (
             <div className="text-center py-8">
               <div className="text-sm text-gray-500">Carregando avaliações...</div>
             </div>
           ) : evaluationsData?.items && evaluationsData.items.length > 0 ? (
-            <div className="space-y-3">
-              {evaluationsData.items.map((evaluation: Evaluation) => (
-                <div
-                  key={evaluation.public_id}
-                  onClick={() => navigate(`/public-acquisitions/${evaluation.public_acquisition.public_id}`)}
-                  className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-colors hover:border-teal-300"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Building2 className="w-4 h-4 text-gray-500" />
-                        <span className="text-xs text-gray-500">Licitação:</span>
+            <>
+              <div className="space-y-3">
+                {evaluationsData.items.map((evaluation: Evaluation) => (
+                  <div
+                    key={evaluation.public_id}
+                    onClick={() => navigate(`/public-acquisitions/${evaluation.public_acquisition.public_id}`)}
+                    className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-colors hover:border-teal-300"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Building2 className="w-4 h-4 text-gray-500" />
+                          <span className="text-xs text-gray-500">Licitação:</span>
+                        </div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {evaluation.public_acquisition.code}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          {evaluation.public_acquisition.title}
+                        </div>
                       </div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {evaluation.public_acquisition.code}
+                      <div>
+                        <div className="text-xs text-gray-500 mb-1">Fornecedor:</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {evaluation.supplier.name}
+                        </div>
+                        {evaluation.is_holder && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-1">
+                            Detentor
+                          </span>
+                        )}
                       </div>
-                      <div className="text-xs text-gray-600">
-                        {evaluation.public_acquisition.title}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1">Fornecedor:</div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {evaluation.supplier.name}
-                      </div>
-                      {evaluation.is_holder && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-1">
-                          Detentor
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Users className="w-4 h-4 text-gray-500" />
-                        <span className="text-xs text-gray-500">Avaliadores:</span>
-                      </div>
-                      <div className="text-sm text-gray-900">
-                        {evaluation.users.length} {evaluation.users.length === 1 ? 'usuário' : 'usuários'}
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Users className="w-4 h-4 text-gray-500" />
+                          <span className="text-xs text-gray-500">Avaliadores:</span>
+                        </div>
+                        <div className="text-sm text-gray-900">
+                          {evaluation.users.length} {evaluation.users.length === 1 ? 'usuário' : 'usuários'}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              <div className="mt-4">
+                <Pagination
+                  currentPage={evaluationPage}
+                  totalItems={evaluationsData.total}
+                  itemsPerPage={evaluationsPerPage}
+                  onPageChange={setEvaluationPage}
+                />
+              </div>
+            </>
           ) : (
             <div className="text-center py-8">
               <p className="text-sm text-gray-500">Nenhuma avaliação encontrada para este item</p>
-            </div>
-          )}
-          {evaluationsData && evaluationsData.total > 0 && (
-            <div className="mt-3 text-xs text-gray-600 text-right">
-              Total: {evaluationsData.total} {evaluationsData.total === 1 ? 'avaliação' : 'avaliações'}
             </div>
           )}
         </div>
