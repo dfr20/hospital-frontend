@@ -27,14 +27,29 @@ const EvaluationProgress: React.FC<{ evaluationId: string }> = ({ evaluationId }
     return null;
   }
 
-  const progressColor = stats.completion_percentage === 100 ? 'bg-green-500' :
-                       stats.completion_percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500';
+  const progressColor = stats.status === 'DESQUALIFICADO' ? 'bg-red-500' :
+                       stats.status === 'OK' ? 'bg-green-500' :
+                       stats.completion_percentage >= 50 ? 'bg-yellow-500' : 'bg-gray-400';
+
+  const statusBadge = stats.status === 'DESQUALIFICADO' ? (
+    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+      Desclassificado
+    </span>
+  ) : stats.status === 'OK' ? (
+    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+      Classificado
+    </span>
+  ) : (
+    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+      Pendente
+    </span>
+  );
 
   return (
     <div className="space-y-1">
-      <div className="flex items-center justify-between text-xs text-gray-600">
-        <span>Progresso</span>
-        <span className="font-semibold">
+      <div className="flex items-center justify-between text-xs">
+        {statusBadge}
+        <span className="font-semibold text-gray-600">
           {stats.answered_questions}/{stats.total_questions} ({stats.completion_percentage.toFixed(0)}%)
         </span>
       </div>
@@ -44,6 +59,11 @@ const EvaluationProgress: React.FC<{ evaluationId: string }> = ({ evaluationId }
           style={{ width: `${stats.completion_percentage}%` }}
         />
       </div>
+      {stats.is_disqualified && stats.disqualification_reasons && stats.disqualification_reasons.length > 0 && (
+        <div className="text-xs text-red-600 mt-1">
+          {stats.disqualification_reasons.length} motivo{stats.disqualification_reasons.length > 1 ? 's' : ''} de desclassificação
+        </div>
+      )}
     </div>
   );
 };

@@ -15,6 +15,7 @@ interface QuestionModalProps {
         roles: string[];
         condition: string | null;
         options: string[] | null;
+        disqualification_rules: string[] | null;
         category_id: string | null;
         hospital_id?: string;
     }) => void;
@@ -27,6 +28,7 @@ interface QuestionModalProps {
         roles?: string[];
         condition?: string | null;
         options?: string[] | null;
+        disqualification_rules?: string[] | null;
         category_id?: string | null;
         category_name?: string;
         hospital_id?: string;
@@ -65,6 +67,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
     const [condition, setCondition] = useState(initialData?.condition || '');
     const [options, setOptions] = useState<string[]>(initialData?.options || []);
     const [newOption, setNewOption] = useState('');
+    const [disqualificationRules, setDisqualificationRules] = useState<string[]>(initialData?.disqualification_rules || []);
     const [categorySearchTerm, setCategorySearchTerm] = useState(initialData?.category_name || '');
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
@@ -80,6 +83,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
             setSelectedRoles(initialData.roles || []);
             setCondition(initialData.condition || '');
             setOptions(initialData.options || []);
+            setDisqualificationRules(initialData.disqualification_rules || []);
             setCategorySearchTerm(initialData.category_name || '');
             if (initialData.category_id && initialData.category_name) {
                 setSelectedCategory({
@@ -151,6 +155,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
             roles: selectedRoles,
             condition: responseType === 'condicional' ? condition.trim() : null,
             options: fieldType === 'select' ? options : null,
+            disqualification_rules: (fieldType === 'select' || fieldType === 'boolean') && disqualificationRules.length > 0 ? disqualificationRules : null,
             category_id: selectedCategory ? selectedCategory.public_id : null,
         });
 
@@ -166,10 +171,19 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         setCondition('');
         setOptions([]);
         setNewOption('');
+        setDisqualificationRules([]);
         setCategorySearchTerm('');
         setSelectedCategory(null);
         setShowCategoryDropdown(false);
         onClose();
+    };
+
+    const handleDisqualificationToggle = (value: string) => {
+        if (disqualificationRules.includes(value)) {
+            setDisqualificationRules(disqualificationRules.filter(v => v !== value));
+        } else {
+            setDisqualificationRules([...disqualificationRules, value]);
+        }
     };
 
     const isReadOnly = mode === 'view';
@@ -289,6 +303,68 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                             </div>
                         ) : (
                             <p className="text-sm text-gray-500 italic">Nenhuma opção adicionada</p>
+                        )}
+                    </div>
+                )}
+
+                {/* Regras de Desclassificação */}
+                {(fieldType === 'select' || fieldType === 'boolean') && (
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Regras de Desclassificação (opcional)
+                        </label>
+                        <p className="text-xs text-gray-500 mb-2">
+                            Selecione quais respostas desqualificam a avaliação
+                        </p>
+                        {fieldType === 'select' && options.length > 0 ? (
+                            <div className="border border-gray-300 rounded-md p-3">
+                                <div className="space-y-2">
+                                    {options.map((option, index) => (
+                                        <label
+                                            key={index}
+                                            className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={disqualificationRules.includes(option)}
+                                                onChange={() => handleDisqualificationToggle(option)}
+                                                disabled={isReadOnly}
+                                                className="w-4 h-4 text-red-600 focus:ring-red-500"
+                                            />
+                                            <span className="text-sm text-gray-900">{option}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : fieldType === 'boolean' ? (
+                            <div className="border border-gray-300 rounded-md p-3">
+                                <div className="space-y-2">
+                                    <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                        <input
+                                            type="checkbox"
+                                            checked={disqualificationRules.includes('Sim')}
+                                            onChange={() => handleDisqualificationToggle('Sim')}
+                                            disabled={isReadOnly}
+                                            className="w-4 h-4 text-red-600 focus:ring-red-500"
+                                        />
+                                        <span className="text-sm text-gray-900">Sim</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                        <input
+                                            type="checkbox"
+                                            checked={disqualificationRules.includes('Não')}
+                                            onChange={() => handleDisqualificationToggle('Não')}
+                                            disabled={isReadOnly}
+                                            className="w-4 h-4 text-red-600 focus:ring-red-500"
+                                        />
+                                        <span className="text-sm text-gray-900">Não</span>
+                                    </label>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-gray-500 italic">
+                                {fieldType === 'select' ? 'Adicione opções primeiro' : 'Nenhuma regra configurada'}
+                            </p>
                         )}
                     </div>
                 )}

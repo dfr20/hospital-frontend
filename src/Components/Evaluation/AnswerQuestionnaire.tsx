@@ -267,9 +267,11 @@ const AnswerQuestionnaire: React.FC<AnswerQuestionnaireProps> = ({
             <div className="flex items-center gap-2 mt-1">
               {statistics && (
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  statistics.status === 'DESQUALIFICADO' ? 'bg-red-100 text-red-800' :
                   statistics.status === 'OK' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                 }`}>
-                  {statistics.status === 'OK' ? 'Completo' : 'Pendente'}
+                  {statistics.status === 'DESQUALIFICADO' ? 'Desclassificado' :
+                   statistics.status === 'OK' ? 'Classificado' : 'Pendente'}
                 </span>
               )}
               {lastSaved && (
@@ -296,6 +298,7 @@ const AnswerQuestionnaire: React.FC<AnswerQuestionnaireProps> = ({
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className={`h-2 rounded-full transition-all duration-300 ${
+                  statistics.status === 'DESQUALIFICADO' ? 'bg-red-600' :
                   statistics.status === 'OK' ? 'bg-green-600' : 'bg-teal-600'
                 }`}
                 style={{ width: `${statistics.completion_percentage}%` }}
@@ -305,6 +308,21 @@ const AnswerQuestionnaire: React.FC<AnswerQuestionnaireProps> = ({
               {statistics.completion_percentage.toFixed(1)}% completo
               {statistics.pending_questions > 0 && ` • ${statistics.pending_questions} pendente${statistics.pending_questions > 1 ? 's' : ''}`}
             </div>
+          </div>
+        )}
+
+        {/* Motivos de Desclassificação */}
+        {!isLoadingStats && statistics && statistics.is_disqualified && statistics.disqualification_reasons && statistics.disqualification_reasons.length > 0 && (
+          <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+            <h4 className="text-sm font-semibold text-red-900 mb-2">Motivos de Desclassificação:</h4>
+            <ul className="space-y-1">
+              {statistics.disqualification_reasons.map((reason, index) => (
+                <li key={index} className="text-sm text-red-800">
+                  <span className="font-medium">{reason.question_number}</span> - {reason.question_description}:
+                  <span className="ml-1 font-semibold">"{reason.answer_value}"</span>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>

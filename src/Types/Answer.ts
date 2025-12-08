@@ -49,10 +49,18 @@ export interface ApplicableQuestion extends Question {
 // O backend retorna diretamente uma lista de questões com answer_value e answer_id
 export type ApplicableQuestionsResponse = ApplicableQuestion[];
 
+export interface DisqualificationReason {
+  question_number: string;
+  question_description: string;
+  answer_value: string;
+}
+
 export interface EvaluationStatistics {
   total_questions: number;
   answered_questions: number;
   pending_questions: number;
   completion_percentage: number;
-  status: 'OK' | 'PENDING';
+  status: 'OK' | 'PENDING' | 'DESQUALIFICADO';
+  is_disqualified: boolean;
+  disqualification_reasons?: DisqualificationReason[];
 }
