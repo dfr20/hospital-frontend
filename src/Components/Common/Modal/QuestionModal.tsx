@@ -147,7 +147,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
             return;
         }
 
-        onSubmit({
+        const payload = {
             question_number: questionNumber.trim(),
             description: description.trim(),
             field_type: fieldType,
@@ -157,7 +157,13 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
             options: fieldType === 'select' ? options : null,
             disqualification_rules: (fieldType === 'select' || fieldType === 'boolean') && disqualificationRules.length > 0 ? disqualificationRules : null,
             category_id: selectedCategory ? selectedCategory.public_id : null,
-        });
+        };
+
+        console.log('QuestionModal - Payload sendo enviado:', payload);
+        console.log('QuestionModal - disqualificationRules state:', disqualificationRules);
+        console.log('QuestionModal - fieldType:', fieldType);
+
+        onSubmit(payload);
 
         handleClose();
     };

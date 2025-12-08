@@ -58,7 +58,10 @@ export const useQuestions = (): UseQuestionsInterface => {
     const createQuestion = () => {
         return useMutation({
             mutationFn: async (data: QuestionPayload): Promise<Question> => {
+                console.log('useQuestions - Enviando POST para /questions/');
+                console.log('useQuestions - Payload completo:', JSON.stringify(data, null, 2));
                 const response = await api.post<Question>('/questions/', data);
+                console.log('useQuestions - Resposta do backend:', response.data);
                 return response.data;
             },
             onSuccess: (newQuestion) => {
@@ -77,7 +80,10 @@ export const useQuestions = (): UseQuestionsInterface => {
     const updateQuestion = () => {
         return useMutation({
             mutationFn: async ({ id, data }: { id: string; data: QuestionUpdatePayload }): Promise<Question> => {
+                console.log('useQuestions - Enviando PUT para /questions/' + id);
+                console.log('useQuestions - Payload completo:', JSON.stringify(data, null, 2));
                 const response = await api.put<Question>(`/questions/${id}`, data);
+                console.log('useQuestions - Resposta do backend:', response.data);
                 return response.data;
             },
             onSuccess: (updatedQuestion) => {

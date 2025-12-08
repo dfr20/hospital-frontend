@@ -14,6 +14,38 @@ import { useAuth } from "../../Contexts/AuthContext";
 import type { Evaluation } from "../../Types/Evaluation";
 import { getErrorMessage } from "../../Utils/errorHandler";
 
+// Componente auxiliar para mostrar status de classificação (compacto para header)
+const EvaluationStatusBadge: React.FC<{ evaluationId: string }> = ({ evaluationId }) => {
+  const { fetchEvaluationStatistics } = useAnswers();
+  const { data: stats, isLoading } = fetchEvaluationStatistics(evaluationId);
+
+  if (isLoading || !stats) {
+    return null;
+  }
+
+  if (stats.status === 'DESQUALIFICADO') {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+        Desclassificado
+      </span>
+    );
+  }
+
+  if (stats.status === 'OK') {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+        Classificado
+      </span>
+    );
+  }
+
+  return (
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+      Pendente
+    </span>
+  );
+};
+
 // Componente auxiliar para mostrar o progresso de uma avaliação
 const EvaluationProgress: React.FC<{ evaluationId: string }> = ({ evaluationId }) => {
   const { fetchEvaluationStatistics } = useAnswers();
@@ -367,9 +399,10 @@ const PublicAcquisitionDetails: React.FC = () => {
                                   {evaluation.supplier.document}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <EvaluationStatusBadge evaluationId={evaluation.public_id} />
                                 {evaluation.is_holder && (
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                     Detentor
                                   </span>
                                 )}

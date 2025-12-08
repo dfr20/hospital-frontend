@@ -106,6 +106,22 @@ const Questions: React.FC = () => {
           {question.roles.length} {question.roles.length === 1 ? 'role' : 'roles'}
         </div>
       )
+    },
+    {
+      key: 'disqualification',
+      header: 'Desclassificação',
+      hideOnTablet: true,
+      render: (question) => (
+        <div className="text-sm">
+          {question.disqualification_rules && question.disqualification_rules.length > 0 ? (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+              {question.disqualification_rules.length} regra{question.disqualification_rules.length > 1 ? 's' : ''}
+            </span>
+          ) : (
+            <span className="text-gray-400 text-xs">Sem regras</span>
+          )}
+        </div>
+      )
     }
   ];
 
@@ -176,14 +192,20 @@ const Questions: React.FC = () => {
     roles: string[];
     condition: string | null;
     options: string[] | null;
+    disqualification_rules: string[] | null;
     category_id: string | null;
     hospital_id?: string;
   }) => {
+    console.log('Data recebida do modal:', data);
+    console.log('disqualification_rules:', data.disqualification_rules);
+
     // Adicionar hospital_id do usuário logado
     const processedData = {
       ...data,
       hospital_id: user?.hospital?.public_id
     };
+
+    console.log('Data processada para envio:', processedData);
 
     if (isEditMode && selectedQuestion) {
       updateQuestionMutation(
@@ -300,6 +322,7 @@ const Questions: React.FC = () => {
           roles: selectedQuestion.roles,
           condition: selectedQuestion.condition,
           options: selectedQuestion.options,
+          disqualification_rules: selectedQuestion.disqualification_rules,
           category_id: selectedQuestion.category_id,
           category_name: selectedQuestion.category?.name,
           hospital_id: selectedQuestion.hospital_id
