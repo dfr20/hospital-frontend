@@ -8,13 +8,11 @@ import type { ApplicableQuestion } from '../../Types/Answer';
 
 interface AnswerQuestionnaireProps {
   evaluationId: string;
-  onComplete?: () => void;
   hideFloatingButton?: boolean;
 }
 
 const AnswerQuestionnaire: React.FC<AnswerQuestionnaireProps> = ({
   evaluationId,
-  onComplete,
   hideFloatingButton = false
 }) => {
   const toast = useToast();
@@ -27,7 +25,7 @@ const AnswerQuestionnaire: React.FC<AnswerQuestionnaireProps> = ({
 
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const autoSaveTimeoutRef = useRef<NodeJS.Timeout>();
+  const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Inicializar com respostas já existentes (agora vêm direto em answer_value)
   useEffect(() => {
@@ -344,7 +342,7 @@ const AnswerQuestionnaire: React.FC<AnswerQuestionnaireProps> = ({
       )}
 
       <form onSubmit={handleManualSave} className="space-y-4">
-        {questions.map((question, index) => {
+        {questions.map((question) => {
           const isAnswered = !!question.answer_value;
           const isDisabled = !canAnswerQuestion(question);
 

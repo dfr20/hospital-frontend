@@ -1,8 +1,8 @@
 import type { FieldConfig } from '../../Components/Common/Modal/DynamicForm';
 
 export const getPublicAcquisitionFormFields = (
-  pregoeiros: Array<{ public_id: string; name: string }>,
-  items: Array<{ public_id: string; name: string }>
+  pregoeiros: Array<{ public_id: string; name: string }>
+  // items: Array<{ public_id: string; name: string }> // Commented out as multi-select not supported
 ): FieldConfig[] => [
   {
     name: 'code',
@@ -35,16 +35,17 @@ export const getPublicAcquisitionFormFields = (
       value: p.public_id,
       label: p.name
     }))
-  },
-  {
-    name: 'item_ids',
-    label: 'Itens da Licitação',
-    type: 'multi-select',
-    placeholder: 'Selecione os itens',
-    required: true,
-    options: items.map(item => ({
-      value: item.public_id,
-      label: item.name
-    }))
   }
+  // TODO: multi-select not supported by DynamicForm yet
+  // {
+  //   name: 'item_ids',
+  //   label: 'Itens da Licitação',
+  //   type: 'multi-select',
+  //   placeholder: 'Selecione os itens',
+  //   required: true,
+  //   options: items.map(item => ({
+  //     value: item.public_id,
+  //     label: item.name
+  //   }))
+  // }
 ];

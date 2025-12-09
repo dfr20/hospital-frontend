@@ -28,10 +28,6 @@ const EvaluationQuestionnaire: React.FC = () => {
     }
   };
 
-  const handleComplete = () => {
-    handleBack();
-  };
-
   const canAssociateUser = user?.role?.name && ['Administrador', 'Gerente', 'Pregoeiro', 'Avaliador Técnico'].includes(user.role.name);
 
   const handleAssociateUserSubmit = async (userId: string) => {
@@ -39,8 +35,10 @@ const EvaluationQuestionnaire: React.FC = () => {
 
     try {
       await associateUserMutation.mutateAsync({
-        evaluationId: id,
-        userId: userId
+        id: id,
+        data: {
+          user_id: userId
+        }
       });
       toast.success('Usuário associado', 'Usuário associado à avaliação com sucesso!');
       setIsAssociateUserModalOpen(false);
@@ -63,6 +61,29 @@ const EvaluationQuestionnaire: React.FC = () => {
       <div className="flex flex-col items-center justify-center min-h-screen">
         <FileText className="h-16 w-16 text-gray-400 mb-4" />
         <h2 className="text-2xl font-semibold text-gray-700 mb-2">Avaliação não encontrada</h2>
+        <button
+          onClick={handleBack}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Voltar
+        </button>
+      </div>
+    );
+  }
+
+  // Verificar se o usuário está associado à avaliação ou é o pregoeiro
+  const isUserAssociated = evaluation.users.some(
+    (evalUser) => evalUser.public_id === user?.public_id
+  );
+  const isPregoeiro = evaluation.public_acquisition?.user_public_id === user?.public_id;
+  const canAnswer = isUserAssociated || isPregoeiro;
+
+  if (!canAnswer) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <FileText className="h-16 w-16 text-red-400 mb-4" />
+        <h2 className="text-2xl font-semibold text-gray-700 mb-2">Acesso Negado</h2>
+        <p className="text-gray-600 mb-4">Você não está associado a esta avaliação</p>
         <button
           onClick={handleBack}
           className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -120,7 +141,6 @@ const EvaluationQuestionnaire: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm p-6">
           <AnswerQuestionnaire
             evaluationId={id || ''}
-            onComplete={handleComplete}
             hideFloatingButton={true}
           />
         </div>

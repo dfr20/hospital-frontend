@@ -37,33 +37,29 @@ export const getQuestionFormFields = (): FieldConfig[] => {
         { value: 'obrigatoria', label: 'Obrigatória' },
         { value: 'condicional', label: 'Condicional' }
       ]
-    },
-    {
-      name: 'roles',
-      label: 'Roles Permitidas',
-      type: 'multi-select',
-      required: true,
-      options: [
-        { value: 'Administrador', label: 'Administrador' },
-        { value: 'Gerente', label: 'Gerente' },
-        { value: 'Pregoeiro', label: 'Pregoeiro' },
-        { value: 'Avaliador Técnico', label: 'Avaliador Técnico' },
-        { value: 'Avaliador Funcional', label: 'Avaliador Funcional' }
-      ]
-    },
-    {
-      name: 'condition',
-      label: 'Condição (apenas para tipo Condicional)',
-      type: 'text',
-      placeholder: 'Ex: P5=amostra',
-      required: false
-    },
-    {
-      name: 'options',
-      label: 'Opções (apenas para tipo Select - separadas por vírgula)',
-      type: 'text',
-      placeholder: 'Ex: Opção 1, Opção 2, Opção 3',
-      required: false
     }
+    // TODO: multi-select not supported by DynamicForm yet - using QuestionModal instead
+    // Commented out unused fields since QuestionModal is used directly
+    // {
+    //   name: 'roles',
+    //   label: 'Roles Permitidas',
+    //   type: 'multi-select',
+    //   required: true,
+    //   options: [...]
+    // },
+    // {
+    //   name: 'condition',
+    //   label: 'Condição (apenas para tipo Condicional)',
+    //   type: 'text',
+    //   placeholder: 'Ex: P5=amostra',
+    //   required: false
+    // },
+    // {
+    //   name: 'options',
+    //   label: 'Opções (apenas para tipo Select - separadas por vírgula)',
+    //   type: 'text',
+    //   placeholder: 'Ex: Opção 1, Opção 2, Opção 3',
+    //   required: false
+    // }
   ];
 };

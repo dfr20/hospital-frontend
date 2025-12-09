@@ -15,49 +15,60 @@ export interface Permission {
 }
 
 export const permissions: Permission[] = [
+  // Usuários - Desenvolvedor, Administrador e Gerente
   {
     page: '/users',
-    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
+    roles: [RoleName.DESENVOLVEDOR, RoleName.ADMINISTRADOR, RoleName.GERENTE]
   },
+  // Itens - Administrador e Gerente
   {
     page: '/items',
-    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
+    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE]
   },
+  // Categorias - Administrador e Gerente
   {
     page: '/categories',
-    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
+    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE]
   },
+  // Subcategorias - Administrador e Gerente
   {
     page: '/subcategories',
-    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
+    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE]
   },
+  // Hospitais - Apenas Desenvolvedor
   {
     page: '/hospitals',
-    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
+    roles: [RoleName.DESENVOLVEDOR]
   },
+  // Catálogo - Apenas Desenvolvedor
   {
     page: '/catalog',
-    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
+    roles: [RoleName.DESENVOLVEDOR]
   },
+  // Fornecedores - Administrador e Gerente
   {
     page: '/suppliers',
-    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
+    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE]
   },
+  // Cargos - Apenas Desenvolvedor
   {
     page: '/job-titles',
-    roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
+    roles: [RoleName.DESENVOLVEDOR]
   },
+  // Dashboard - Todos os cargos
   {
     page: '/dashboard',
     roles: [RoleName.DESENVOLVEDOR, RoleName.GERENTE, RoleName.ADMINISTRADOR, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
   },
+  // Licitações Públicas - Todos os cargos exceto Desenvolvedor
   {
     page: '/public-acquisitions',
-    roles: [RoleName.DESENVOLVEDOR, RoleName.ADMINISTRADOR, RoleName.GERENTE, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
+    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
   },
+  // Questões - Administrador e Gerente
   {
     page: '/questions',
-    roles: [RoleName.DESENVOLVEDOR, RoleName.ADMINISTRADOR, RoleName.GERENTE, RoleName.PREGOEIRO, RoleName.AVALIADOR_TECNICO, RoleName.AVALIADOR_FUNCIONAL]
+    roles: [RoleName.ADMINISTRADOR, RoleName.GERENTE]
   }
 ];
 

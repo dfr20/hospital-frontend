@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllowedPages } from '../../Utils/permissions';
 import { Layout } from '../Common/Layout/Layout';
 import { useAuth } from '../../Contexts/AuthContext';
 

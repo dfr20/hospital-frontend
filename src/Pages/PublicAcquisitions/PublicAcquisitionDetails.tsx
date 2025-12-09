@@ -433,16 +433,39 @@ const PublicAcquisitionDetails: React.FC = () => {
                             </div>
 
                             <div className="flex justify-end gap-2 mb-3">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate(`/evaluations/${evaluation.public_id}/questionnaire`);
-                                }}
-                                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                              >
-                                <FileText className="w-4 h-4" />
-                                <span>Responder Questionário</span>
-                              </button>
+                              {(() => {
+                                const isUserAssociated = evaluation.users.some(
+                                  (evalUser) => evalUser.public_id === user?.public_id
+                                );
+                                const isPregoeiro = publicAcquisitionData?.user_public_id === user?.public_id;
+                                const canAnswer = isUserAssociated || isPregoeiro;
+
+                                return (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (canAnswer) {
+                                        navigate(`/evaluations/${evaluation.public_id}/questionnaire`);
+                                      } else {
+                                        toast.error(
+                                          'Acesso negado',
+                                          'Você não está associado a esta avaliação'
+                                        );
+                                      }
+                                    }}
+                                    disabled={!canAnswer}
+                                    className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                                      canAnswer
+                                        ? 'bg-green-500 text-white hover:bg-green-600 cursor-pointer'
+                                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    }`}
+                                    title={!canAnswer ? 'Você não está associado a esta avaliação' : ''}
+                                  >
+                                    <FileText className="w-4 h-4" />
+                                    <span>Responder Questionário</span>
+                                  </button>
+                                );
+                              })()}
                               {canAssociateUser && (
                                 <button
                                   onClick={(e) => {

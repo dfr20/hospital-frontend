@@ -119,7 +119,7 @@ export const useAnswers = (): UseAnswersInterface => {
                 const response = await api.post<Answer[]>('/answers/bulk', data);
                 return response.data;
             },
-            onSuccess: (newAnswers, variables) => {
+            onSuccess: (_newAnswers, variables) => {
                 queryClient.invalidateQueries({
                     queryKey: ['answers']
                 });

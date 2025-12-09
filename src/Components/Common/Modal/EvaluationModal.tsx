@@ -39,7 +39,6 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
     initialData
 }) => {
     const [selectedItems, setSelectedItems] = useState<Item[]>(initialData?.items || []);
-    const [showItemDropdown, setShowItemDropdown] = useState(false);
     const [supplierSearchTerm, setSupplierSearchTerm] = useState(initialData?.supplier_name || '');
     const [userSearchTerm, setUserSearchTerm] = useState('');
     const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
@@ -76,7 +75,6 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
         if (!selectedItems.find(i => i.public_id === item.public_id)) {
             setSelectedItems([...selectedItems, item]);
         }
-        setShowItemDropdown(false);
     };
 
     const handleRemoveItem = (itemId: string) => {
@@ -131,7 +129,6 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({
 
     const handleClose = () => {
         setSelectedItems([]);
-        setShowItemDropdown(false);
         setSupplierSearchTerm('');
         setUserSearchTerm('');
         setSelectedSupplier(null);

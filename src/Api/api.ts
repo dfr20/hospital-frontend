@@ -58,6 +58,12 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Se for erro 401 no endpoint de login, não tenta refresh - apenas retorna o erro
+    if (error.response?.status === 401 && originalRequest.url?.includes('/auth/')) {
+      return Promise.reject(error);
+    }
+
+    // Para outros endpoints com 401, tenta refresh do token
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -75,18 +81,26 @@ api.interceptors.response.use(
 
       try {
         const newToken = await refreshAccessToken();
-        
+
         if (newToken) {
           processQueue(null, newToken);
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return api(originalRequest);
         } else {
           processQueue(error, null);
+          // Limpa o localStorage antes de redirecionar
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('user');
           window.location.href = '/';
           return Promise.reject(error);
         }
       } catch (refreshError) {
         processQueue(refreshError, null);
+        // Limpa o localStorage antes de redirecionar
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
         window.location.href = '/';
         return Promise.reject(refreshError);
       } finally {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CircleUser, KeyRound, Hospital, Eye, EyeOff } from 'lucide-react';
+import { CircleUser, Hospital, Eye, EyeOff } from 'lucide-react';
 import backgroundImage from '../../assets/auth-bg/costa.png';
 import { useAuth } from '../../Contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';

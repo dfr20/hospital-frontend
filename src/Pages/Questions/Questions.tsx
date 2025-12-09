@@ -200,9 +200,16 @@ const Questions: React.FC = () => {
     console.log('disqualification_rules:', data.disqualification_rules);
 
     // Adicionar hospital_id do usuário logado
+    const hospitalId = user?.hospital?.public_id;
+
+    if (!hospitalId) {
+      toast.error('Erro', 'Hospital não identificado');
+      return;
+    }
+
     const processedData = {
       ...data,
-      hospital_id: user?.hospital?.public_id
+      hospital_id: hospitalId
     };
 
     console.log('Data processada para envio:', processedData);
